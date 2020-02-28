@@ -1,5 +1,10 @@
 ;; change font size to 10pt
 (set-default-font "Monospace-8")
+;; disable shitty UI elements
+(menu-bar-mode -1)
+(toggle-scroll-bar -1)
+(tool-bar-mode -1)
+
 (use-package doom-themes
   :ensure
   :init

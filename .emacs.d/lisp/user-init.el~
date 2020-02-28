@@ -1,7 +1,0 @@
-(require 'user-init-config)
-(require 'user-init-default)
-(require 'user-init-helm)
-(require 'user-init-ace-window)
-
-(provide 'user-init)
-

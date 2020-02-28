@@ -1,3 +1,0 @@
-(use-package ace-window
-  :ensure
-  :bind( ("M-m o" . ace-window)))
