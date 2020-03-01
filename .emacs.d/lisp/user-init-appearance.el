@@ -1,5 +1,5 @@
 ;; change font size to 10pt
-(set-default-font "Monospace-8")
+(set-default-font "Monospace-14")
 ;; disable shitty UI elements
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
