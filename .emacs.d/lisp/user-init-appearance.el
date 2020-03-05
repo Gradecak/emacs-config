@@ -1,5 +1,7 @@
 ;; change font size to 10pt
-(set-default-font "Monospace-14")
+(add-to-list 'default-frame-alist '(font . "Monospace-8" ))
+(set-face-attribute 'default t :font "Monospace-8" )
+;;(set-Default-font "Monospace-14")
 ;; disable shitty UI elements
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)

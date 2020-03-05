@@ -43,3 +43,10 @@ url/
 
 # Flycheck
 flycheck_*
+
+projectile-bookmars.eld
+projectile.cache
+recentf
+todo
+transient
+url

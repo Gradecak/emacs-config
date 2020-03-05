@@ -1,1 +1,0 @@
-("~/Documents/emacs-config/" "~/.oh-my-zsh/" "~/Documents/veri/api/")
