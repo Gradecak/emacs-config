@@ -1,5 +1,5 @@
 ;; change font size to 10pt
-(set-default-font "Monospace-14")
+(set-frame-font "Monospace-14")
 ;; disable shitty UI elements
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
@@ -10,10 +10,13 @@
   :init
   (load-theme 'doom-one t)
   :config
-  (progn
-    (doom-themes-neotree-config)
-    (setq doom-neotree-line-spacing 0)
-    (doom-themes-org-config)))
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t
+        doom-neotree-line-spacing 0) ; if nil, italics is universally disabled
+      (doom-themes-neotree-config)
+      (doom-themes-org-config)
+      (doom-themes-visual-bell-config)
+      )
 
 (use-package all-the-icons
   :ensure)

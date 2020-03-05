@@ -1,1 +1,1 @@
-("~/Documents/emacs-config/" "~/.oh-my-zsh/" "~/Documents/veri/api/")
+("~/Documents/emacs-config/" "~/Documents/emacs-config/.git/" "~/Documents/veri/configs/" "~/Documents/veri/analytics-factory/.git/" "~/Documents/veri/analytics-factory/" "~/Documents/veri/feedback/" "~/.oh-my-zsh/" "~/Documents/veri/feedback-react/" "~/Documents/veri/api/")

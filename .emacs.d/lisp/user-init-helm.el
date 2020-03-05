@@ -8,9 +8,16 @@
 
 (require 'helm-config)
 
-(use-package helm-sys
-  :commands (helm-top)
-  :config (helm-top-poll-mode 1))
+(use-package ag
+  :ensure)
+
+(use-package helm-ag
+  :ensure t
+  :after ag
+  :config
+  (custom-set-variables
+   '(helm-follow-mode-persistent t)
+   '(helm-ag-base-command "ag -Q --vimgrep")))
 
 (setq helm-scroll-amount 4
       helm-execute-persistent-action "<tab>")
@@ -28,6 +35,8 @@
   )
 
 (use-package helm-projectile
-  :ensure t)
+  :ensure t
+  :init
+  (helm-projectile-on))
 
 (provide 'user-init-helm)
