@@ -1,3 +1,8 @@
+;; increase threshold before garbage collector runs
+;; improves performance for lsp which generates lots of garbage
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
                     (not (gnutls-available-p))))
@@ -30,9 +35,10 @@ There are two things you can do about this warning:
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(helm-ag-base-command "ag -Q --vimgrep")
+ '(helm-follow-mode-persistent t)
  '(package-selected-packages
-   (quote
-    (treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs magit exec-path-from-shell hydra projectile company helm-utils ace-window use-package))))
+   '(hl-todo hl-todo-mode indent-guide ace-jump-mode yaml-mode rjsx-mode rjx-mode ag helm-ag helm-sys company-box pyvenv python-mode helm-lsp lsp-treemacs company-lsp lsp-ui lsp-mode helm-flycheck flycheck-pos-tip flycheck treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs magit exec-path-from-shell hydra projectile company helm-utils ace-window use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

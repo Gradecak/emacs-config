@@ -12,10 +12,13 @@
   :init
   (load-theme 'doom-one t)
   :config
-  (progn
-    (doom-themes-neotree-config)
-    (setq doom-neotree-line-spacing 0)
-    (doom-themes-org-config)))
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t
+        doom-neotree-line-spacing 0) ; if nil, italics is universally disabled
+      (doom-themes-neotree-config)
+      (doom-themes-org-config)
+      (doom-themes-visual-bell-config)
+      )
 
 (use-package all-the-icons
   :ensure)

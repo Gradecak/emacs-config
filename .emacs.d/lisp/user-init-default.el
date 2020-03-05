@@ -1,4 +1,11 @@
-(add-to-list 'exec-path "/usr/local/bin")
+;; enable recent files
+(setq recentf-max-menu-items 25)
+(setq recentf-max-saved-items 25)
+(recentf-mode)
+;; disable macos native fullscreen
+(if (eq system-type 'darwin)
+    (setq ns-use-native-fullscreen nil))
+
 ;; disable toolbar ;;
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode 0))
@@ -9,7 +16,7 @@
 ;; enable paren matching mode ;;
 (show-paren-mode t)
 ;; enable electric pair mode ;;
-(electric-pair-mode t)
+;(electric-pair-mode t)
 ;; enable electric indent mode ;;
 (electric-indent-mode)
 ;; Disable the splash screen ;;
@@ -39,5 +46,26 @@
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-envs
    '("PATH"))))
+
+(setq default-directory (file-name-as-directory (substitute-in-file-name "$HOME")))
+
+;; if pasting over selection, delete it and then paste
+(delete-selection-mode 1)
+
+;; on buffer save hooks
+(add-hook 'before-save-hook (lambda ()
+                              (delete-trailing-whitespace)
+                              (lsp-format-buffer)))
+
+(use-package smartparens
+  :ensure t
+  :hook
+  (prog-mode . smartparens-mode))
+
+(use-package rainbow-delimiters
+  :ensure t
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
+
 
 (provide 'user-init-default)
