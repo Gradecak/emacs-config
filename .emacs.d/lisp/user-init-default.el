@@ -5,7 +5,8 @@
 ;; disable macos native fullscreen
 (if (eq system-type 'darwin)
     (setq ns-use-native-fullscreen nil))
-
+(setq backup-directory-alist
+      `(("." . ,(concat user-emacs-directory "backups"))))
 ;; disable toolbar ;;
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode 0))
@@ -41,11 +42,9 @@
   :ensure
   :demand t
   :init
-  (when (memq window-system '(mac ns))
-  (setenv "SHELL" "/bin/zsh")
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-envs
-   '("PATH"))))
+   '("PATH")))
 
 (setq default-directory (file-name-as-directory (substitute-in-file-name "$HOME")))
 
@@ -54,8 +53,9 @@
 
 ;; on buffer save hooks
 (add-hook 'before-save-hook (lambda ()
+                              (lsp-format-buffer)
                               (delete-trailing-whitespace)
-                              (lsp-format-buffer)))
+                              (lsp-organize-imports)))
 
 (use-package smartparens
   :ensure t

@@ -3,7 +3,8 @@
   :demand t ;stop lazy loading which breaks projectile
   :bind( ("M-x" . helm-M-x)
          ("C-x C-f" . helm-find-files)
-         ("C-x C-b" . helm-buffers-list))
+         ("C-x C-b" . helm-buffers-list)
+         ("C-x b" . helm-buffers-list))
   :config (helm-mode 1))
 
 (require 'helm-config)

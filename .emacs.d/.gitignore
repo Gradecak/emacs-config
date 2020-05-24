@@ -48,3 +48,9 @@ flycheck_*
 transient/
 eshell/
 .cache
+
+lsp-cache/*
+projectile-bookmarks*
+projectile.cache*
+.mc-lists.el
+recentf*

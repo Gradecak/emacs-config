@@ -11,5 +11,8 @@
   :ensure t
   :after flycheck)
 
+(add-hook 'markdown-mode-hook 'flyspell-mode)
+(add-hook 'org-src-mode-hook 'flyspell-mode)
+
 (provide 'user-init-flycheck)
 ;;; user-init-flycheck.el ends here

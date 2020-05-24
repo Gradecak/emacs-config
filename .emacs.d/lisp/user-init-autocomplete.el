@@ -6,6 +6,11 @@
               ("C-p" . company-select-previous-or-abort)))
 
 
+(use-package company-restclient
+  :ensure
+  :init
+  (add-to-list 'company-backends 'company-restclient))
+
 (use-package yasnippet
   :ensure t
   :config

@@ -5,7 +5,7 @@
   (progn
     (setq projectile-completion-system 'helm)
     (setq projectile-require-project-root nil)
-    (setq projectile-switch-project-action 'projectile-dired)
+    (setq projectile-switch-project-action 'projectile-find-file)
     (add-to-list 'projectile-ignored-projects `,(concat (getenv "HOME") "/"))
     (setq projectile-enable-caching t) ; Enable caching, otherwise find-file is slow
 

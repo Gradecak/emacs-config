@@ -2,7 +2,7 @@
   :ensure t
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   :init (progn
-          (setq lsp-keymap-prefix "s-l")
+          (setq lsp-keymap-prefix "M-RET")
           (setq lsp-report-if-no-buffer t)
           (setq lsp-log-io t)
           (setq lsp-enable-completion-at-point t)
@@ -10,10 +10,16 @@
           (setq lsp-before-save-edits t))
   :hook (
          ;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (python-mode . lsp-deferred)
+         (python-mode . lsp)
          (rjsx-mode . lsp-deferred)
          (php-mode . lsp-deferred)
-        )
+         (csharp-mode . lsp-deferred)
+         (typescript-mode . lsp-deferred)
+         (go-mode . lsp-deferred)
+         (elixir-mode . lsp-deferred)
+         )
+  :config
+  (setq lsp-clients-elixir-server-executable "/home/maki/Documents/elixir-ls/build/language_server.sh")
   :commands lsp lsp-deferred)
 
 ;; optionally
@@ -28,7 +34,7 @@
         lsp-ui-sideline-enable nil
         lsp-ui-flycheck-enable t
         lsp-ui-flycheck-list-position 'right
-        lsp-ui-flycheck-live-reporting t
+        lsp-flycheck-live-reporting t
         lsp-ui-peek-enable t
         lsp-ui-peek-list-width 60
         lsp-ui-peek-peek-height 25))
@@ -49,5 +55,28 @@
 (use-package lsp-treemacs
   :ensure t
   :commands lsp-treemacs-errors-list)
+
+;; keybindings
+(defhydra hydra-lsp (:exit t :hint nil :color blue)
+  "
+ Buffer^^               Server^^                   Symbol
+-------------------------------------------------------------------------------------
+ [_f_] format           [_M-r_] restart            [_d_] declaration  [_i_] implementation  [_o_] documentation
+ [_m_] imenu            [_S_]   shutdown           [_D_] definition   [_t_] type            [_r_] rename
+ [_x_] execute action   [_M-s_] describe session   [_R_] references   [_s_] signature"
+  ("d" lsp-find-declaration)
+  ("D" lsp-ui-peek-find-definitions)
+  ("R" lsp-ui-peek-find-references)
+  ("i" lsp-ui-peek-find-implementation)
+  ("t" lsp-find-type-definition)
+  ("s" lsp-signature-help)
+  ("o" lsp-describe-thing-at-point)
+  ("r" lsp-rename)
+  ("f" lsp-format-buffer)
+  ("m" lsp-ui-imenu)
+  ("x" lsp-execute-code-action)
+  ("M-s" lsp-describe-session)
+  ("M-r" lsp-workspace-restart)
+  ("S" lsp-workspace-shutdown))
 
 (provide 'user-init-lsp)

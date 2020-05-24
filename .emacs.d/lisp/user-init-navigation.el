@@ -1,7 +1,5 @@
-(use-package ace-jump-mode
+(use-package avy
   :ensure
-  :bind (("C-;" . ace-jump-mode)))
-
-
+  :bind (("C-;" . avy-goto-char)))
 
 (provide 'user-init-navigation)
