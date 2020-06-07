@@ -1,18 +1,19 @@
 (require 'user-init-funcs)
 (require 'user-init-lsp)
+(require 'user-init-persp)
 
 (use-package hydra
   :ensure)
 
-;; (use-package which-key
-;;   :ensure
-;;   :init
-;;   (which-key-mode)
-;;   (which-key-setup-side-window-bottom)
-;;   (which-key-setup-minibuffer)
-;;   :config
-;;   (setq which-key-idle-delay 0.5)
-;;   (setq which-key-idle-secondary-delay 0.05))
+(use-package which-key
+  :ensure
+  :init
+  (which-key-mode)
+  (which-key-setup-side-window-bottom)
+  (which-key-setup-minibuffer)
+  :config
+  (setq which-key-idle-delay 0.5)
+  (setq which-key-idle-secondary-delay 0.05))
 
 (defhydra hydra-buffer (:color blue)
   "Buffers"
@@ -47,7 +48,7 @@
 -------------------------------------------------------------------------------------
  [_b_] buffers    [_g_] git         [_t_] toggles  [_<tab>_] last-buffer
  [_f_] files      [_e_] errors      [_s_] search   [_*_] helm-ag
- [_p_] projects   [_c_] comment     [_r_] ring"
+ [_p_] projects   [_c_] comment     [_r_] ring     [_w_] workspaces"
  
   ("<tab>" (switch-to-buffer nil))
   ("b" hydra-buffer/body)
@@ -59,14 +60,16 @@
   ("t" hydra-toggles/body)
   ("s" hydra-search/body)
   ("r" hydra-ring/body)
-  ("*" helm-ag))
+  ("*" helm-ag)
+  ("w" hydra-persp/body))
   
 
+(with-eval-after-load "lsp-mode"
+  (define-key lsp-mode-map (kbd "M-RET") 'hydra-lsp/body))
 (global-set-key (kbd "M-m") 'hydra-main/body)
-(define-key global-map (kbd "M-RET") 'hydra-lsp/body)
-(define-key python-mode-map (kbd "M-RET") 'hydra-lsp/body)
-(define-key pyvenv-mode-map (kbd "M-RET") 'hydra-lsp/body)
+(global-set-key (kbd "M-RET") 'hydra-lsp/body)
 (global-set-key (kbd "M-o")  'other-window)
+
 
 (provide 'user-init-keybindings)
 ;;; user-init-keybindings.el ends here

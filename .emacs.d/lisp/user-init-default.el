@@ -7,6 +7,8 @@
     (setq ns-use-native-fullscreen nil))
 (setq backup-directory-alist
       `(("." . ,(concat user-emacs-directory "backups"))))
+(setq auto-save-file-name-transforms
+  `((".*" "~/.emacs-saves/" t)))
 ;; disable toolbar ;;
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode 0))

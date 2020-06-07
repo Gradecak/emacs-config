@@ -8,6 +8,7 @@
   :config (helm-mode 1))
 
 (require 'helm-config)
+(require 'helm-for-files)
 
 (use-package ag
   :ensure)
@@ -17,7 +18,7 @@
   :after ag
   :config
   (custom-set-variables
-   '(helm-follow-mode-persistent t)
+   ;; '(helm-follow-mode-persistent t)
    '(helm-ag-base-command "ag -Q --vimgrep")))
 
 (setq helm-scroll-amount 4
