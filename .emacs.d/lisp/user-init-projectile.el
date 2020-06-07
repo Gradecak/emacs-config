@@ -20,15 +20,6 @@
             projectile-root-top-down ; First look for projects in top-down order
             projectile-root-bottom-up)) ; Then in bottom-up order
 
-    ;; (defun modi/advice-projectile-use-ag (&rest _args)
-    ;;   "Always use `ag' for getting a list of all files in the project."
-    ;;   (mapconcat #'shell-quote-argument
-    ;;              (append '("ag")
-    ;;                      modi/ag-arguments
-    ;;                      '("-0"         ;Output null separated results
-    ;;                        "-g" ""))    ;Get file names matching "" (all files)
-    ;;              " "))
-
     (defhydra hydra-projectile (:color teal
                                 :hint  nil)
       "

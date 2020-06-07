@@ -2,16 +2,12 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 (add-to-list 'default-frame-alist '(font . "Iosevka 8" ))
-;; (set-face-attribute 'default nil :height 70)
-;; (set-face-attribute 'default t :font "Monospace-7" )
-;;(set-Default-font "Monospace-14")
 ;; disable shitty UI elements
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
 (tool-bar-mode -1)
 
 ;; relative line numbers
-
 (use-package linum-relative
   :ensure
   :config
