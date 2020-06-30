@@ -36,10 +36,13 @@ There are two things you can do about this warning:
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(helm-ag-base-command "ag -Q --vimgrep")
+ '(helm-ag-use-temp-buffer t)
+ '(helm-execute-persistent-action "<tab>")
  '(helm-follow-mode-persistent t)
+ '(helm-scroll-amount 4)
  '(package-selected-packages
    (quote
-    (org-gcal mu4e-alert sass-mode dockerfile-mode elixir-mode typescript typescript-mode web-mode js2-refactor csharp-mode undo-tree company-restclient restclient terraform-mode groovy-mode hungry-delete hl-todo hl-todo-mode indent-guide ace-jump-mode yaml-mode rjsx-mode rjx-mode ag helm-ag helm-sys company-box pyvenv python-mode helm-lsp lsp-treemacs company-lsp lsp-ui lsp-mode helm-flycheck flycheck-pos-tip flycheck treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs magit exec-path-from-shell hydra projectile company helm-utils ace-window use-package)))
+    (shell-pop gh-md multi-term org-gcal mu4e-alert sass-mode dockerfile-mode elixir-mode typescript typescript-mode web-mode js2-refactor csharp-mode undo-tree company-restclient restclient terraform-mode groovy-mode hungry-delete hl-todo hl-todo-mode indent-guide ace-jump-mode yaml-mode rjsx-mode rjx-mode ag helm-ag helm-sys company-box pyvenv python-mode helm-lsp lsp-treemacs company-lsp lsp-ui lsp-mode helm-flycheck flycheck-pos-tip flycheck treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs magit exec-path-from-shell hydra projectile company helm-utils ace-window use-package)))
  '(send-mail-function (quote smtpmail-send-it))
  '(terraform-indent-level 4))
 (custom-set-faces

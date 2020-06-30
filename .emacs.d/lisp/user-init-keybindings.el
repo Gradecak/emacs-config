@@ -42,6 +42,16 @@
 (defhydra hydra-ring (:color blue)
   ("y" helm-show-kill-ring))
 
+(defhydra hydra-open (:color blue
+                             :hint nil)
+  "
+Open process:
+-------------------------------------------------------------------------------------
+[_t_] ansi-term ^^ [_m_]: mail ^^ 
+"
+  ("t" (ansi-term "/usr/bin/zsh"))
+  ("m" mu4e))
+
 (defhydra hydra-main (:color blue
                       :hint nil)
  "
@@ -58,6 +68,7 @@
   ("e" hydra-errors/body)
   ("c" hydra-comments/body)
   ("t" hydra-toggles/body)
+  ("o" hydra-open/body)
   ("s" hydra-search/body)
   ("r" hydra-ring/body)
   ("*" helm-ag)

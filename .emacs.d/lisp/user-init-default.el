@@ -69,5 +69,8 @@
   :hook
   (prog-mode . rainbow-delimiters-mode))
 
+;; set the default shell used by ansi-term
+(setq explicit-shell-file-name "/usr/bin/zsh")
+
 
 (provide 'user-init-default)
