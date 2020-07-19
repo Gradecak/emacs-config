@@ -17,7 +17,7 @@
 (require 'user-init-js)
 (require 'user-init-treemacs)
 (require 'user-init-navigation)
-(require 'user-init-persp)
+;;(require 'user-init-persp)
 (require 'user-init-org)
 (require 'user-init-floobits)
 

@@ -249,7 +249,9 @@
                     (persp-remove-buffer              . helm-persp-buffer-list-bridge))
                   helm-completing-read-handlers-alist))))
 
-(defhydra hydra-persp (:color blue :hint nil)
+
+(with-eval-after-load "hydra"
+  (defhydra hydra-persp (:color blue :hint nil)
   "
 ------------------------------------------------------------
 [_s_] switch  [_k_] kill
@@ -258,6 +260,7 @@
   ("s" persp-switch)
   ("c" persp-add-new)
   ("k" persp-kill)
-  ("p" projectile-persp-switch-project))
+  ("p" projectile-persp-switch-project)))
+
 
 (provide 'user-init-persp)
