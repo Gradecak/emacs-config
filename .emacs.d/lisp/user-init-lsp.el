@@ -20,6 +20,7 @@
          )
   :config
   (setq lsp-clients-elixir-server-executable "/home/maki/Documents/elixir-ls/build/language_server.sh")
+  (setq lsp-eldoc-hook nil)
   :commands lsp lsp-deferred)
 
 ;; optionally

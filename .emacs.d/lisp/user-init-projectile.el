@@ -1,25 +1,28 @@
+(require 'cl)
 (use-package projectile
-  :ensure
+  :ensure t
   :after helm
   :config
   (progn
     (setq projectile-completion-system 'helm)
-    ;(projectile-ensure-project (projectile-project-root))
+    (setq projectile-auto-discover nil)
     (setq projectile-switch-project-action 'projectile-find-file)
     (add-to-list 'projectile-ignored-projects `,(concat (getenv "HOME") "/"))
     (setq projectile-enable-caching t) ; Enable caching, otherwise find-file is slow
-    ;; Git projects should be marked as projects in top-down fashion,
-    ;; so that each git submodule can be a projectile project.
+    ;; ;; Git projects should be marked as projects in top-down fashion,
+    ;; ;; so that each git submodule can be a projectile project.
     ;; (setq projectile-project-root-files-bottom-up
     ;;       (delete ".git" projectile-project-root-files-bottom-up))
-    (add-to-list 'projectile-project-root-files ".git")
+    ;; (add-to-list 'projectile-project-root-files ".git")
+    ;; ;; projectile-project-root-files #'(".git")
+    ;; (setq projectile-project-root-files-functions
+    ;;       '(projectile-root-local
+    ;;         projectile-root-top-down ; First look for projects in top-down order
+    ;;         projectile-root-bottom-up)) ; Then in bottom-up order
+    (projectile-mode 1)))
 
-    (setq projectile-project-root-files-functions
-          '(projectile-root-local
-            projectile-root-top-down ; First look for projects in top-down order
-            projectile-root-bottom-up)) ; Then in bottom-up order
-
-    (defhydra hydra-projectile (:color teal
+(with-eval-after-load "hydra"
+      (defhydra hydra-projectile (:color teal
                                 :hint  nil)
       "
      PROJECTILE: %(if (fboundp 'projectile-project-root) (projectile-project-root) \"TBD\")
@@ -56,9 +59,8 @@
       ("X"   projectile-cleanup-known-projects)
       ("z"   projectile-cache-current-file)
       ("4"   hydra-projectile-other-window/body "other window")
-      ("q"   nil "cancel" :color blue))
+      ("q"   nil "cancel" :color blue)))
 
-    (projectile-mode 1)))
 
 
 (provide 'user-init-projectile)
