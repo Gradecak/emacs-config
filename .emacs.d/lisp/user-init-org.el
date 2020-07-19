@@ -2,10 +2,6 @@
 ;; https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
 
 
-
-;;client-id: 316255193923-6cgb799nuvjjta8qkdvkglbs33oimjoo.apps.googleusercontent.com
-;;client-secret: 2w1FldZ6hgynQ2iOAmQfw9qo
-
 (setq org-agenda-files '("~/gtd/inbox.org"
                          "~/gtd/gtd.org"
                          "~/gtd/tickler.org"

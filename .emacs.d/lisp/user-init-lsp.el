@@ -3,14 +3,14 @@
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   :init (progn
           (setq lsp-keymap-prefix "M-RET")
-          (setq lsp-report-if-no-buffer t)
-          (setq lsp-log-io t)
+          ;; (setq lsp-log-io t)
           (setq lsp-enable-completion-at-point t)
           (setq lsp-enable-indentation t)
-          (setq lsp-before-save-edits t))
+          (setq lsp-before-save-edits t)
+          )
   :hook (
          ;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (python-mode . lsp)
+         ;; (python-mode . lsp-deferred)
          (rjsx-mode . lsp-deferred)
          (php-mode . lsp-deferred)
          (csharp-mode . lsp-deferred)
@@ -20,9 +20,10 @@
          )
   :config
   (setq lsp-clients-elixir-server-executable "/home/maki/Documents/elixir-ls/build/language_server.sh")
+  (setq lsp-eldoc-hook nil)
   :commands lsp lsp-deferred)
 
-;; optionally
+;; ;; optionally
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode
@@ -31,13 +32,12 @@
         lsp-ui-doc-use-childframe t
         lsp-ui-doc-position 'top
         lsp-ui-doc-include-signature t
-        lsp-ui-sideline-enable nil
-        lsp-ui-flycheck-enable t
-        lsp-ui-flycheck-list-position 'right
-        lsp-flycheck-live-reporting t
+        lsp-ui-sideline-enable t
+        ;; lsp-ui-flycheck-list-position 'right
         lsp-ui-peek-enable t
         lsp-ui-peek-list-width 60
-        lsp-ui-peek-peek-height 25))
+        lsp-ui-peek-peek-height 25)
+  )
 
 (use-package company-lsp
   :ensure t
@@ -51,13 +51,13 @@
 (use-package helm-lsp
   :ensure t
   :commands helm-lsp-workspace-symbol)
-;; if you are ivy user
 (use-package lsp-treemacs
   :ensure t
   :commands lsp-treemacs-errors-list)
 
 ;; keybindings
-(defhydra hydra-lsp (:exit t :hint nil :color blue)
+(with-eval-after-load 'hydra
+  (defhydra hydra-lsp (:exit t :hint nil :color blue)
   "
  Buffer^^               Server^^                   Symbol
 -------------------------------------------------------------------------------------
@@ -77,6 +77,7 @@
   ("x" lsp-execute-code-action)
   ("M-s" lsp-describe-session)
   ("M-r" lsp-workspace-restart)
-  ("S" lsp-workspace-shutdown))
+  ("S" lsp-workspace-shutdown)))
+
 
 (provide 'user-init-lsp)

@@ -1,6 +1,8 @@
 (use-package flycheck
   :ensure t
-  :init (global-flycheck-mode))
+  :init (global-flycheck-mode)
+  :custom
+  (flycheck-display-errors-delay .3))
 
 (use-package flycheck-pos-tip
   :ensure t

@@ -42,11 +42,9 @@
 ;; load $PATH $MANPATH adn exec-path from shell
 (use-package exec-path-from-shell
   :ensure
-  :demand t
   :init
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-envs
-   '("PATH")))
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 
 (setq default-directory (file-name-as-directory (substitute-in-file-name "$HOME")))
 
@@ -70,7 +68,8 @@
   (prog-mode . rainbow-delimiters-mode))
 
 ;; set the default shell used by ansi-term
-(setq explicit-shell-file-name "/usr/bin/zsh")
+
+
 
 
 (provide 'user-init-default)

@@ -1,3 +1,6 @@
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu/mu4e")
+(require 'mu4e)
+
 ;; enable notifications for mu4e
 (use-package mu4e-alert
   :ensure)
@@ -5,7 +8,6 @@
 (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
 (setq mu4e-alert-set-window-urgency nil)
 
-(require 'mu4e)
 (require 'smtpmail)
 
 ;; spell check

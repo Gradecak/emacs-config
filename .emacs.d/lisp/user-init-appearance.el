@@ -1,7 +1,7 @@
 ;; change font size to 10pt
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
-(add-to-list 'default-frame-alist '(font . "Iosevka 8" ))
+(add-to-list 'default-frame-alist '(font . "Iosevka 14" ))
 ;; disable shitty UI elements
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)

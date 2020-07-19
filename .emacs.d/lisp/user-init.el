@@ -1,6 +1,6 @@
 (require 'user-init-default)
 (require 'user-init-funcs)
-(require 'user-init-email)
+;; (require 'user-init-email)
 (require 'user-init-helm)
 (require 'user-init-ace-window)
 (require 'user-init-appearance)
@@ -19,6 +19,7 @@
 (require 'user-init-navigation)
 (require 'user-init-persp)
 (require 'user-init-org)
+(require 'user-init-floobits)
 
 ;; load keybindings last.
 ;; it makes references to other packages
