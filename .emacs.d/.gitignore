@@ -54,3 +54,7 @@ projectile-bookmarks*
 projectile.cache*
 .mc-lists.el
 recentf*
+.lsp-session-v1
+games/
+org-clock-save.el
+persp-confs/

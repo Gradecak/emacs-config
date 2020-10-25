@@ -1,3 +1,8 @@
+
+(use-package python
+  :config
+  (setq python-eldoc-get-doc nil))
+
 (use-package pyvenv
   :ensure t
   :config
@@ -8,8 +13,9 @@
 (defun lsp-python-cfg ()
     (lsp-register-custom-settings '(
                                   ("pyls.configurationSources" ("flake8"))
-                                  ("pyls.plugins.pyls_mypy.enabled" t)
+                                  ("pyls.plugins.pyls_mypy.enabled" t t)
                                   ("pyls.plugins.pyls_mypy.live_mode" :json-false)
+                                  ("pyls.plugins.pyls_isort.enabled" t t)
                                   ;; ("pyls.plugins.autopep8.enabled" :json-false)
                                   ;; ("pyls.plugins.pydocstyle.enabled" :json-false)
                                   ;; ("pyls.plugins.pycodestyle.enabled" t)
@@ -22,7 +28,7 @@
                                   ;; ("pyls.plugins.yapf.enabled" :json-false)
                                   ;; ("pyls.plugins.autopep8.enabled" :json-false)
                                   ;; ("pyls.plugins.pyflakes.enabled" :json-false)
-                                  ("pyls.plugins.flake8.enabled" t))))
+                                  ("pyls.plugins.flake8.enabled" t t))))
 
 (add-hook 'lsp-after-initialize-hook 'lsp-python-cfg)
 

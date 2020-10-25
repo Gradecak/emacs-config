@@ -14,10 +14,18 @@
   (setq linum-relative-backend 'display-line-numbers-mode))
 (linum-relative-toggle)
 
+(use-package whitespace
+  :ensure
+  :config
+  (setq whitespace-line-column 88)
+  (setq whitespace-style '(face lines-tail))
+  :init
+  (add-hook 'prog-mode-hook 'whitespace-mode))
+
 (use-package doom-themes
   :ensure
   :init
-  (load-theme 'doom-tomorrow-night t)
+  (load-theme 'doom-spacegrey t)
   :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t

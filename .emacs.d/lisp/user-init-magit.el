@@ -13,4 +13,9 @@
   ("!" magit-git-command "command")
   ("$" magit-process-buffer "process")))
 
+
+(use-package diff-hl
+  :ensure t
+  :init (global-diff-hl-mode))
+
 (provide 'user-init-magit)

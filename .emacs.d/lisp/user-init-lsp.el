@@ -3,14 +3,15 @@
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   :init (progn
           (setq lsp-keymap-prefix "M-RET")
-          ;; (setq lsp-log-io t)
+          (setq lsp-log-io t)
           (setq lsp-enable-completion-at-point t)
           (setq lsp-enable-indentation t)
           (setq lsp-before-save-edits t)
+          (setq lsp-signature-render-documentation nil)
           )
   :hook (
          ;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         ;; (python-mode . lsp-deferred)
+         (python-mode . lsp-deferred)
          (rjsx-mode . lsp-deferred)
          (php-mode . lsp-deferred)
          (csharp-mode . lsp-deferred)

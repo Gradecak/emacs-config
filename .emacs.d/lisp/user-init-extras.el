@@ -18,10 +18,10 @@
   (custom-set-variables
    '(terraform-indent-level 4)))
 
-(use-package indent-guide
-  :ensure
-  :init
-  (indent-guide-global-mode))
+;; (use-package indent-guide
+;;   :ensure
+;;   :init
+;;   (indent-guide-global-mode))
 
 (use-package hl-todo
   :ensure
@@ -73,5 +73,14 @@
   (setq  shell-pop-full-span t)
   ;; need to do this manually or not picked up by `shell-pop'
   (shell-pop--set-shell-type 'shell-pop-shell-type shell-pop-shell-type))
+
+(use-package multiple-cursors
+  :ensure t)
+
+;; (use-package fill-column-indicator
+;;   :ensure t
+;;   :config
+;;   (setq fill-column 88)
+;;   (add-hook 'prog-mode-hook (fci-mode)))
 
 (provide 'user-init-extras)

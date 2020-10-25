@@ -21,6 +21,19 @@
     ;;         projectile-root-bottom-up)) ; Then in bottom-up order
     (projectile-mode 1)))
 
+(use-package org-projectile
+  :ensure t
+  :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+         ("C-c c" . org-capture))
+  :config
+  (progn
+    (org-projectile-per-project)
+    (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+    (push (org-projectile-project-todo-entry) org-capture-templates)
+    (add-to-list 'org-capture-templates
+                 (org-projectile-project-todo-entry
+                  :capture-character "p"))))
+
 (with-eval-after-load "hydra"
       (defhydra hydra-projectile (:color teal
                                 :hint  nil)

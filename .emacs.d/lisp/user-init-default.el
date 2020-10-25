@@ -8,7 +8,9 @@
 (setq backup-directory-alist
       `(("." . ,(concat user-emacs-directory "backups"))))
 (setq auto-save-file-name-transforms
-  `((".*" "~/.emacs-saves/" t)))
+      `((".*" "~/.emacs-saves/" t)))
+;; disable eldoc because its annoying
+(global-eldoc-mode -1)
 ;; disable toolbar ;;
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode 0))
@@ -66,6 +68,9 @@
   :ensure t
   :hook
   (prog-mode . rainbow-delimiters-mode))
+
+(setq-default fill-column 88)
+(add-hook 'prog-mode-hook (display-fill-column-indicator-mode))
 
 ;; set the default shell used by ansi-term
 
