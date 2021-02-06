@@ -1,11 +1,8 @@
 ;; change font size to 10pt
-(set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
-(add-to-list 'default-frame-alist '(font . "Iosevka 14" ))
+;; (set-language-environment "UTF-8")
+;; (set-default-coding-systems 'utf-8)
+;; (add-to-list 'default-frame-alist '(font . "Iosevka 14" ))
 ;; disable shitty UI elements
-(menu-bar-mode -1)
-(toggle-scroll-bar -1)
-(tool-bar-mode -1)
 
 ;; relative line numbers
 (use-package linum-relative
@@ -13,14 +10,6 @@
   :config
   (setq linum-relative-backend 'display-line-numbers-mode))
 (linum-relative-toggle)
-
-(use-package whitespace
-  :ensure
-  :config
-  (setq whitespace-line-column 88)
-  (setq whitespace-style '(face lines-tail))
-  :init
-  (add-hook 'prog-mode-hook 'whitespace-mode))
 
 (use-package doom-themes
   :ensure

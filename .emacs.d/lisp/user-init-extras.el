@@ -38,13 +38,19 @@
 
 (use-package undo-tree
   :ensure
+  :config
+  (setq undo-tree-enable-undo-in-region nil
+        undo-tree-auto-save-history t
+        undo-tree-visualizer-diff t
+        undo-tree-history-directory-alist
+        `((".*" . ,(concat user-emacs-directory "undo-history"))))
   :init
   (global-undo-tree-mode))
 
 (use-package restclient
   :ensure t
   :init
-  (add-to-list 'auto-mode-alist '("\\.rst\\'" . restclient-mode)))
+  (add-to-list 'auto-mode-alist '("\\.rcm\\'" . restclient-mode)))
 
 (use-package dockerfile-mode
   :ensure t
@@ -63,24 +69,7 @@
 (use-package gh-md
   :ensure t)
 
-(use-package shell-pop
-  :ensure 
-  :bind (("C-c t" . shell-pop))
-  :config
-  (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*" (lambda nil (ansi-term shell-pop-term-shell)))))
-  (setq shell-pop-term-shell "/bin/zsh")
-  (setq shell-pop-window-size 40)
-  (setq  shell-pop-full-span t)
-  ;; need to do this manually or not picked up by `shell-pop'
-  (shell-pop--set-shell-type 'shell-pop-shell-type shell-pop-shell-type))
-
 (use-package multiple-cursors
   :ensure t)
-
-;; (use-package fill-column-indicator
-;;   :ensure t
-;;   :config
-;;   (setq fill-column 88)
-;;   (add-hook 'prog-mode-hook (fci-mode)))
 
 (provide 'user-init-extras)

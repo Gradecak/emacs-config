@@ -1,15 +1,13 @@
 (require 'user-init-funcs)
-(require 'user-init-lsp)
-(require 'user-init-persp)
 
 (use-package hydra
   :ensure)
 
-(setq mac-option-key-is-meta nil
+(when (display-graphic-p) 
+  (setq mac-option-key-is-meta nil
       mac-command-key-is-meta t
       mac-command-modifier 'meta
-      mac-option-modifier 'none);;; I prefer cmd key for meta
-
+      mac-option-modifier 'none))
 
 (use-package which-key
   :ensure
@@ -130,6 +128,11 @@ Open process:
 (global-set-key (kbd "M-m") 'hydra-main/body)
 (global-set-key (kbd "M-RET") 'hydra-lsp/body)
 (global-set-key (kbd "M-o")  'other-window)
+
+(eval-after-load "term"
+  (progn
+    '(define-key term-raw-map (kbd "C-c C-y") 'term-paste)
+    '(define-key term-raw-map (kbd "C-c M-x") 'helm-M-x)))
 
 
 (provide 'user-init-keybindings)

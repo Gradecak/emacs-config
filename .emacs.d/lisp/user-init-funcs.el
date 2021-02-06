@@ -23,9 +23,20 @@
           (rename-file filename new-name t)
           (set-visited-file-name new-name t t)))))))
 
- (defun indent-buffer ()
-   (interactive)
-   (save-excursion
-     (indent-region (point-min) (point-max) nil)))
+ (defun sort-words (reverse beg end)
+      "Sort words in region alphabetically, in REVERSE if negative.
+    Prefixed with negative \\[universal-argument], sorts in reverse.
+  
+    The variable `sort-fold-case' determines whether alphabetic case
+    affects the sort order.
+  
+    See `sort-regexp-fields'."
+      (interactive "*P\nr")
+      (sort-regexp-fields reverse "\\w+" "\\&" beg end))
+
+(defun indent-buffer ()
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max) nil)))
 
 (provide 'user-init-funcs)

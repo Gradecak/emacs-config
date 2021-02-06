@@ -13,7 +13,7 @@
 
 (setq org-capture-templates '(("t" "Todo [inbox]" entry
                                (file+headline "~/gtd/inbox.org" "Tasks")
-                               "* TODO %i%?")
+                               "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n")
                               ("T" "Tickler" entry
                                (file+headline "~/gtd/tickler.org" "Tickler")
                                "* %i%? \n %U")
@@ -40,17 +40,41 @@
   (string= "TODO" (org-get-todo-state)))
 
 (setq org-agenda-custom-commands 
-      '(("h" "Home" tags-todo "@home"
-         ((org-agenda-overriding-header "Home")))
-        ("v" "Veri" tags-todo "@veri"
-         ((org-agenda-overriding-header "Veri")))
-        ("f" "Freelance" tags-todo "@freelance"
-         ((org-agenda-overriding-header "Freelance")))))
+      '(("p" "Personal" tags-todo "@personal"
+         ((org-agenda-overriding-header "Personal")))
+        ("b" "Bloomon" tags-todo "@bloomon"
+         ((org-agenda-overriding-header "Bloomon")))))
 
 ;; save org clocks to disk and allow them to be fetched on next
 ;; startup
 (setq org-clock-persist 'history)
 (org-clock-persistence-insinuate)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; org-mode agenda options                                                ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;open agenda in current window
+(setq org-agenda-window-setup (quote current-window))
+;;warn me of any deadlines in next 7 days
+(setq org-deadline-warning-days 7)
+;;show me tasks scheduled or due in next fortnight
+(setq org-agenda-span (quote fortnight))
+;;don't show tasks as scheduled if they are already shown as a deadline
+(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+;;don't give awarning colour to tasks with impending deadlines
+;;if they are scheduled to be done
+(setq org-agenda-skip-deadline-prewarning-if-scheduled (quote pre-scheduled))
+;;don't show tasks that are scheduled or have deadlines in the
+;;normal todo list
+(setq org-agenda-todo-ignore-deadlines (quote all))
+(setq org-agenda-todo-ignore-scheduled (quote all))
+;;sort tasks in order of when they are due and then by priority
+(setq org-agenda-sorting-strategy
+  (quote
+   ((agenda deadline-up priority-down)
+    (todo priority-down category-keep)
+    (tags priority-down category-keep)
+    (search category-keep))))
 
 ;; keybindings
 (global-set-key (kbd "C-c c") 'org-capture)

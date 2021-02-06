@@ -1,10 +1,5 @@
-;; increase threshold before garbage collector runs
-;; improves performance for lsp which generates lots of garbage
-(setq load-prefer-newer t)
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (require 'package)
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
                     (not (gnutls-available-p))))
        (proto (if no-ssl "http" "https")))
@@ -14,7 +9,8 @@ which is unsafe because it allows man-in-the-middle attacks.
 There are two things you can do about this warning:
 1. Install an Emacs version that does support SSL and be safe.
 2. Remove this warning from your init file so you won't see it again."))
-  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t) (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t) 
+  ;; (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
   ;; and `package-pinned-packages`. Most users will not need or want to do this.
   ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
@@ -44,8 +40,9 @@ There are two things you can do about this warning:
  '(helm-execute-persistent-action "<tab>")
  '(helm-follow-mode-persistent t)
  '(helm-scroll-amount 4)
+ '(org-agenda-files '("~/gtd/inbox.org"))
  '(package-selected-packages
-   '(org-projectile diff-hl fill-column-indicator floobits elpy shell-pop gh-md multi-term org-gcal mu4e-alert sass-mode dockerfile-mode elixir-mode typescript typescript-mode web-mode js2-refactor csharp-mode undo-tree company-restclient restclient terraform-mode groovy-mode hungry-delete hl-todo hl-todo-mode indent-guide ace-jump-mode yaml-mode rjsx-mode rjx-mode ag helm-ag helm-sys company-box pyvenv python-mode helm-lsp lsp-treemacs company-lsp lsp-ui lsp-mode helm-flycheck flycheck-pos-tip flycheck treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs magit exec-path-from-shell hydra projectile company helm-utils ace-window use-package))
+   '(yasnippet-snippets csv-mode gnu-elpa-keyring-update lsp-haskell haskell org-projectile diff-hl fill-column-indicator floobits elpy shell-pop gh-md multi-term org-gcal mu4e-alert sass-mode dockerfile-mode elixir-mode typescript typescript-mode web-mode js2-refactor csharp-mode undo-tree company-restclient restclient terraform-mode groovy-mode hungry-delete hl-todo hl-todo-mode indent-guide ace-jump-mode yaml-mode rjsx-mode rjx-mode ag helm-ag helm-sys company-box pyvenv python-mode helm-lsp lsp-treemacs company-lsp lsp-ui lsp-mode helm-flycheck flycheck-pos-tip flycheck treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs magit exec-path-from-shell hydra projectile company helm-utils ace-window use-package))
  '(send-mail-function 'smtpmail-send-it)
  '(terraform-indent-level 4))
 (custom-set-faces

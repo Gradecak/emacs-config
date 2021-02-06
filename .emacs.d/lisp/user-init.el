@@ -1,5 +1,4 @@
 (require 'user-init-default)
-(require 'user-init-funcs)
 ;; (require 'user-init-email)
 (require 'user-init-helm)
 (require 'user-init-ace-window)
@@ -15,11 +14,14 @@
 (require 'user-init-php)
 (require 'user-init-magit)
 (require 'user-init-js)
+(require 'user-init-haskell)
 (require 'user-init-treemacs)
 (require 'user-init-navigation)
-;;(require 'user-init-persp)
+;; (require 'user-init-persp)
+;; (require 'user-init-terminal)
 (require 'user-init-org)
-(require 'user-init-floobits)
+(require 'bloomon)
+;;(require 'user-init-floobits)
 
 ;; load keybindings last.
 ;; it makes references to other packages

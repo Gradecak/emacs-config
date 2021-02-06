@@ -1,6 +1,14 @@
 ;; enable recent files
-(setq recentf-max-menu-items 25)
-(setq recentf-max-saved-items 25)
+;; (setq recentf-max-menu-items 25)
+;; (setq recentf-max-saved-items 25)
+
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8-unix)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(global-auto-revert-mode t)
+
 (recentf-mode)
 ;; disable macos native fullscreen
 (if (eq system-type 'darwin)
@@ -11,9 +19,6 @@
       `((".*" "~/.emacs-saves/" t)))
 ;; disable eldoc because its annoying
 (global-eldoc-mode -1)
-;; disable toolbar ;;
-(when (fboundp 'tool-bar-mode)
-  (tool-bar-mode 0))
 ;; enable linum mode ;;
 (if (fboundp 'global-display-line-numbers-mode)
     (global-display-line-numbers-mode t)
@@ -71,10 +76,6 @@
 
 (setq-default fill-column 88)
 (add-hook 'prog-mode-hook (display-fill-column-indicator-mode))
-
-;; set the default shell used by ansi-term
-
-
 
 
 (provide 'user-init-default)
