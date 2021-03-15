@@ -11,6 +11,7 @@
           )
   :hook (
          ;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (lsp-mode . lsp-enable-which-key-integration)
          (python-mode . lsp-deferred)
          (rjsx-mode . lsp-deferred)
          (js2-mode . lsp-deferred)
@@ -21,11 +22,24 @@
          (elixir-mode . lsp-deferred)
          (haskell-mode . lsp-deferred)
          (haskell-literate-mode . lsp-deferred)
+         (java-mode . lsp-deferred)
          )
   :config
-  (setq lsp-clients-elixir-server-executable "/home/maki/Documents/elixir-ls/build/language_server.sh")
+  (setq lsp-clients-elixir-server-executable "/home/maki/Downloads/elixir-ls/language_server.sh")
   (setq lsp-eldoc-hook nil)
   :commands lsp lsp-deferred)
+
+(use-package dap-mode
+  :ensure t
+  :after (lsp-mode)
+  :config
+  (require 'dap-java))
+
+(use-package lsp-java 
+:ensure t
+:config
+(add-hook 'java-mode-hook 'lsp)
+(setq lsp-java-java-path "/usr/lib/jvm/java-11-openjdk-amd64/bin/java"))
 
 ;; ;; optionally
 (use-package lsp-ui

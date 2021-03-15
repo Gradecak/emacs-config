@@ -128,6 +128,7 @@ Open process:
 (global-set-key (kbd "M-m") 'hydra-main/body)
 (global-set-key (kbd "M-RET") 'hydra-lsp/body)
 (global-set-key (kbd "M-o")  'other-window)
+(global-set-key (kbd "C-;")  'comment-line)
 
 (eval-after-load "term"
   (progn
