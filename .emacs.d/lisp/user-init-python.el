@@ -24,10 +24,11 @@
   )
 
 (with-eval-after-load "lsp-mode"
-  (setq lsp-pyls-configuration-sources '("flake8"))
+  (setq lsp-pyls-configuration-sources ["flake8"])
   (setq lsp-pyls-plugins-pycodestyle-enabled nil)
   (setq lsp-pyls-plugins-flake8-enabled t)
-  (setq lsp-pyls-plugins-flake8-config "~/.config/flake8"))
+  (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
+  (setq lsp-pyls-plugins-autopep8-enabled nil))
 
 ;; (defun lsp-python-cfg ()
 ;;     (lsp-register-custom-settings '(

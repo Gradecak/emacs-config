@@ -21,7 +21,7 @@
   (progn
     (custom-set-variables
      ;; '(helm-follow-mode-persistent t)
-     '(helm-ag-base-command "ag -Q --vimgrep")
+     '(helm-ag-base-command "ag --vimgrep")
      '(helm-scroll-amount 4)
      '(helm-ag-use-temp-buffer t)
      '(helm-execute-persistent-action "<tab>"))
