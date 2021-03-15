@@ -18,5 +18,5 @@
 (setq initial-frame-alist
         '((width . 80)
           (tool-bar-lines . 0)
-          (font . "Iosevka 14")
+          (font . "Iosevka 11")
           (set-language-environment "UTF-8")))

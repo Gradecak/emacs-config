@@ -72,4 +72,7 @@
 (use-package multiple-cursors
   :ensure t)
 
+(use-package elixir-mode
+  :ensure t)
+
 (provide 'user-init-extras)
