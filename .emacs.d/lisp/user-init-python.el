@@ -19,16 +19,35 @@
     (if (file-directory-p venv-path)
         (pyvenv-activate venv-path)
       (message "no venv for project"))
-    )
+    ))
 
-  )
+;; (setq lsp-pyls-configuration-sources ["flake8"])
+;; (setq lsp-pyls-plugins-pycodestyle-enabled nil)
+(setq lsp-python-ms-executable
+      "~/Documents/python-language-server/output/bin/Release/osx-x64/publish/Microsoft.Python.LanguageServer")
 
-(with-eval-after-load "lsp-mode"
-  (setq lsp-pyls-configuration-sources ["flake8"])
-  (setq lsp-pyls-plugins-pycodestyle-enabled nil)
-  (setq lsp-pyls-plugins-flake8-enabled t)
-  (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
-  (setq lsp-pyls-plugins-autopep8-enabled nil))
+(use-package lsp-python-ms
+  :ensure t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-python-ms)
+                         (lsp)))
+  :init
+  (setq lsp-python-ms-executable (executable-find "python-language-server")))
+
+;; (setq lsp-pyls-plugins-flake8-enabled t)
+;; (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
+;; (setq lsp-pyls-plugins-pylint-enabled nil)
+;; (setq lsp-pyls-plugins-pydocstyle-enabled nil)
+;; (setq lsp-pyls-plugins-autopep8-enabled nil)
+
+;; (with-eval-after-load "lsp-mode"
+;; (setq lsp-pyls-configuration-sources ["flake8"])
+;;   (setq lsp-pyls-plugins-pycodestyle-enabled nil)
+;;   (setq lsp-pyls-plugins-flake8-enabled t)
+;;   (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
+;;   (setq lsp-pyls-plugins-pylint-enabled nil)
+;;   (setq lsp-pyls-plugins-pydocstyle-enabled nil)
+;;   (setq lsp-pyls-plugins-autopep8-enabled nil))
 
 ;; (defun lsp-python-cfg ()
 ;;     (lsp-register-custom-settings '(
@@ -36,20 +55,15 @@
 ;;                                   ("pyls.plugins.pyls_mypy.enabled" t t)
 ;;                                   ("pyls.plugins.pyls_mypy.live_mode" :json-false)
 ;;                                   ("pyls.plugins.pyls_isort.enabled" t t)
-;;                                   ;; ("pyls.plugins.autopep8.enabled" :json-false)
-;;                                   ;; ("pyls.plugins.pydocstyle.enabled" :json-false)
-;;                                   ;; ("pyls.plugins.pycodestyle.enabled" t)
-;;                                   ;; ("pyls.plugins.pycodestyle.max_line_length" "80")
-;;                                   ;; ("pyls.plugins.rope.enabled" t)
-;;                                   ;; ("pyls.plugins.mccabe.enabled" t)
 ;;                                   ("pyls.plugins.pyls_black.enabled" t t)
-;;                                   ;; ("pyls.plugins.pyls_black.line_length" "80")
-;;                                   ;; ("pyls.plugins.yapf.enabled" :json-false)
-;;                                   ;; ("pyls.plugins.autopep8.enabled" :json-false)
-;;                                   ;; ("pyls.plugins.pyflakes.enabled" :json-false)
+;;                                   ("pyls.plugins.pycodestyle.enabled" :json-false)
+;;                                   ("pyls.plugins.flake8.config" "~/.config/flake8")
+;;                                   ("pyls.plugins.pylint.enabled" :json-false)
+;;                                   ("pyls.plugins.pydocstyle.enabled" :json-false)
+;;                                   ("pyls.plugins.autopep8.enabled" :json-false)
 ;;                                   ("pyls.plugins.flake8.enabled" t t))))
 
 ;; (add-hook 'lsp-after-initialize-hook 'lsp-python-cfg)
-(add-hook 'python-mode-hook #'auto-pyvenv)
+;; (add-hook 'python-mode-hook #'auto-pyvenv)
 
 (provide 'user-init-python)

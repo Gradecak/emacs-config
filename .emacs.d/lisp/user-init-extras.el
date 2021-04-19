@@ -69,10 +69,13 @@
 (use-package gh-md
   :ensure t)
 
-(use-package multiple-cursors
-  :ensure t)
-
 (use-package elixir-mode
   :ensure t)
+
+(use-package drag-stuff
+  :ensure t
+  :config
+  (global-set-key (kbd "C-S-p") #'drag-stuff-up)
+  (global-set-key (kbd "C-S-n") #'drag-stuff-down))
 
 (provide 'user-init-extras)
