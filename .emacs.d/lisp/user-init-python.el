@@ -23,31 +23,20 @@
 
 ;; (setq lsp-pyls-configuration-sources ["flake8"])
 ;; (setq lsp-pyls-plugins-pycodestyle-enabled nil)
-(setq lsp-python-ms-executable
-      "~/Documents/python-language-server/output/bin/Release/osx-x64/publish/Microsoft.Python.LanguageServer")
-
-(use-package lsp-python-ms
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp)))
-  :init
-  (setq lsp-python-ms-executable (executable-find "python-language-server")))
-
 ;; (setq lsp-pyls-plugins-flake8-enabled t)
 ;; (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
 ;; (setq lsp-pyls-plugins-pylint-enabled nil)
 ;; (setq lsp-pyls-plugins-pydocstyle-enabled nil)
 ;; (setq lsp-pyls-plugins-autopep8-enabled nil)
 
-;; (with-eval-after-load "lsp-mode"
-;; (setq lsp-pyls-configuration-sources ["flake8"])
-;;   (setq lsp-pyls-plugins-pycodestyle-enabled nil)
-;;   (setq lsp-pyls-plugins-flake8-enabled t)
-;;   (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
-;;   (setq lsp-pyls-plugins-pylint-enabled nil)
-;;   (setq lsp-pyls-plugins-pydocstyle-enabled nil)
-;;   (setq lsp-pyls-plugins-autopep8-enabled nil))
+(with-eval-after-load "lsp-mode"
+(setq lsp-pyls-configuration-sources ["flake8"])
+  (setq lsp-pyls-plugins-pycodestyle-enabled nil)
+  (setq lsp-pyls-plugins-flake8-enabled t)
+  (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
+  (setq lsp-pyls-plugins-pylint-enabled nil)
+  (setq lsp-pyls-plugins-pydocstyle-enabled nil)
+  (setq lsp-pyls-plugins-autopep8-enabled nil))
 
 ;; (defun lsp-python-cfg ()
 ;;     (lsp-register-custom-settings '(

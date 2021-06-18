@@ -9,6 +9,9 @@
 (prefer-coding-system 'utf-8)
 (global-auto-revert-mode t)
 
+;; disable lockfiles. super annoying when working with webpack as it causes it to crash
+(setq create-lockfiles nil)
+
 (recentf-mode)
 ;; disable macos native fullscreen
 (if (eq system-type 'darwin)

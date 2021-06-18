@@ -3,18 +3,18 @@
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   :init (progn
           (setq lsp-keymap-prefix "M-RET")
-          (setq lsp-log-io t)
-          (setq lsp-enable-completion-at-point t)
+          (setq lsp-completion-enable t)
           (setq lsp-enable-indentation t)
           (setq lsp-before-save-edits t)
           (setq lsp-signature-render-documentation nil)
           (setq lsp-pyls-configuration-sources ["flake8"])
           (setq lsp-pyls-plugins-pycodestyle-enabled nil)
           (setq lsp-pyls-plugins-flake8-enabled t)
-          (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
+          ;; (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
           (setq lsp-pyls-plugins-pylint-enabled nil)
           (setq lsp-pyls-plugins-pydocstyle-enabled nil)
           (setq lsp-pyls-plugins-autopep8-enabled nil)
+          (setq lsp-pyls-server-command "pylsp")
           )
   :hook (
          ;; replace XXX-mode with concrete major-mode(e. g. python-mode)
@@ -32,18 +32,18 @@
          (java-mode . lsp-deferred)
          )
   :config
-      (lsp-register-custom-settings '(
-                                  ("pyls.configurationSources" ("flake8"))
-                                  ("pyls.plugins.pyls_mypy.enabled" t t)
-                                  ("pyls.plugins.pyls_mypy.live_mode" :json-false)
-                                  ("pyls.plugins.pyls_isort.enabled" t t)
-                                  ("pyls.plugins.pyls_black.enabled" t t)
-                                  ("pyls.plugins.pycodestyle.enabled" :json-false)
-                                  ("pyls.plugins.flake8.config" "~/.config/flake8")
-                                  ("pyls.plugins.pylint.enabled" :json-false)
-                                  ("pyls.plugins.pydocstyle.enabled" :json-false)
-                                  ("pyls.plugins.autopep8.enabled" :json-false)
-                                  ("pyls.plugins.flake8.enabled" t t)))
+  (lsp-register-custom-settings
+   '(("pylsp.configurationSources" '("flake8"))
+     ("pylsp.plugins.pyls_mypy.enabled" t t)
+     ("pylsp.plugins.pyls_mypy.live_mode" :json-false)
+     ("pylsp.plugins.pyls_isort.enabled" t t)
+     ("pylsp.plugins.pyls_black.enabled" t t)
+     ("pylsp.plugins.pycodestyle.enabled" :json-false)
+     ;; ("pylsp.plugins.flake8.config" "~/.config/flake8")
+     ("pylsp.plugins.pylint.enabled" :json-false)
+     ("pylsp.plugins.pydocstyle.enabled" :json-false)
+     ("pylsp.plugins.autopep8.enabled" :json-false)
+     ("pylsp.plugins.flake8.enabled" t t)))
   (setq lsp-clients-elixir-server-executable "/home/maki/Downloads/elixir-ls/language_server.sh")
   (setq lsp-eldoc-hook nil)
   :commands lsp lsp-deferred)
@@ -75,15 +75,6 @@
         lsp-ui-peek-list-width 60
         lsp-ui-peek-peek-height 25)
   )
-
-(use-package company-lsp
-  :ensure t
-  :commands company-lsp
-  :config
-  (push 'company-lsp company-backends)
-  (setq company-transformers nil
-        company-lsp-async t
-        company-lsp-cache-candidates nil))
 ;; if you are helm user
 (use-package helm-lsp
   :ensure t

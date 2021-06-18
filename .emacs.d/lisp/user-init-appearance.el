@@ -14,7 +14,7 @@
 (use-package doom-themes
   :ensure
   :init
-  (load-theme 'doom-spacegrey t)
+  (load-theme 'doom-wilmersdorf t)
   :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t
