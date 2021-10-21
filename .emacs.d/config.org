@@ -1,0 +1,1199 @@
+* Package Management
+#+begin_src emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+  (package-refresh-contents)
+  (package-initialize)
+
+
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package)
+    (require 'use-package))
+#+END_SRC
+
+* Custom Functions
+** Delete file and the accompanying buffer
+   #+begin_src emacs-lisp
+     (defun delete-file-and-buffer ()
+       "Kill the current buffer and deletes the file it is visiting."
+       (interactive)
+       (let ((filename (buffer-file-name)))
+         (if filename
+             (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+                 (progn
+                   (delete-file filename)
+                   (message "Deleted file %s." filename)
+                   (kill-buffer)))
+           (message "Not a file visiting buffer!"))))
+   #+end_src
+** Rename file and the accompanying buffer
+   #+begin_src emacs-lisp
+     (defun rename-file-and-buffer ()
+       "Rename the current buffer and file it is visiting."
+       (interactive)
+       (let ((filename (buffer-file-name)))
+         (if (not (and filename (file-exists-p filename)))
+             (message "Buffer is not visiting a file!")
+           (let ((new-name (read-file-name "New name: " filename)))
+             (cond
+              ((vc-backend filename) (vc-rename-file filename new-name))
+              (t
+               (rename-file filename new-name t)
+               (set-visited-file-name new-name t t)))))))
+   #+end_src
+** Sort words in a region alphabetically
+   #+begin_src emacs-lisp
+     (defun sort-words (reverse beg end)
+          "Sort words in region alphabetically, in REVERSE if negative.
+        Prefixed with negative \\[universal-argument], sorts in reverse.
+
+        The variable `sort-fold-case' determines whether alphabetic case
+        affects the sort order.
+
+        See `sort-regexp-fields'."
+          (interactive "*P\nr")
+          (sort-regexp-fields reverse "\\w+" "\\&" beg end))
+   #+end_src
+** Indent a whole buffer rather than a small selection
+   #+begin_src emacs-lisp
+     (defun indent-buffer ()
+       (interactive)
+       (save-excursion
+         (indent-region (point-min) (point-max) nil)))
+   #+end_src
+** Automatically turn on the virutal env when you open a project
+   #+begin_src emacs-lisp
+     (defun auto-pyvenv ()
+       (interactive)
+       (let* ((project-root (projectile-project-name))
+              (venvs (concat (getenv "HOME") "/.venvs/"))
+              (venv-path (concat venvs project-root)))
+         (message venv-path)
+         (if (file-directory-p venv-path)
+             (pyvenv-activate venv-path)
+           (message "no venv for project"))
+         ))
+   #+end_src
+** Bloomon-cli Specific stuff
+   #+begin_src emacs-lisp
+     (defun _bloomon-cli-path ()
+       (replace-regexp-in-string "\n$" "" (shell-command-to-string "which bloomon")))
+
+     (defun _bloomon-exec (cmd)
+       (start-process-shell-command "" "out" (concat (_bloomon-cli-path) cmd)))
+
+     (defun _bloomon-prompt-secrets (action)
+       (helm :sources
+             (helm-make-source "Bloomon" 'helm-source-sync
+               :candidates `("dev" "stg" "prod")
+               :action action
+               )))
+
+     (defun bloomon-encrypt-decrypt (cb)
+       (let* ((root (projectile-project-root))
+             (default-directory root))
+         (_bloomon-prompt-secrets (lambda (env)
+                                    (message "operation %s for %s secrets (%s)" cb env root)
+                                    (_bloomon-exec (concat cb env))))))
+
+     (defun bloomon-decrypt ()
+       (interactive)
+       (bloomon-encrypt-decrypt " decrypt "))
+
+     (defun bloomon-encrypt ()
+       (interactive)
+       (let ((root (projectile-project-root)))
+         (delete-file (concat root "secrets/.keep"))
+         (delete-directory (concat root "secrets/.mypy_cache") t))
+       (bloomon-encrypt-decrypt " encrypt "))
+
+     (defun msg-me (process event)
+        (princ
+          (format "Process: %s had the event '%s'" process event)))
+
+     (defun _bloomon-branch-prompt (action)
+       )
+
+     (defun _bloomon-diff (branch)
+       (let* ((process-connection-type t)
+              (buff-name "*bloomon diff*")
+              (diff-proc nil))
+         (with-output-to-temp-buffer buff-name
+           (setq diff-proc
+                 (start-process "diff" buff-name (_bloomon-cli-path) "diff" branch))
+           (switch-to-buffer-other-window buff-name)
+           (set-process-sentinel diff-proc 'msg-me)
+           (special-mode)
+           (diff-mode)
+           )))
+
+     (defun bloomon-diff ()
+       (interactive)
+       (helm :sources
+             (helm-make-source "Branches" 'helm-source-sync
+               :candidates (magit-list-branch-names)
+               :action '_bloomon-diff)))
+   #+end_src
+** Load init.el
+   #+begin_src emacs-lisp :lexical no
+     (defun load-init-el ()
+       (interactive)
+       (load-file user-init-file))
+   #+end_src
+** Sync SHOP board
+   #+begin_src emacs-lisp :lexical no
+     (defun sync-jira-board ()
+       (interactive)
+       (call-interactively #'org-jira-get-issues)
+       (dolist (i org-jira-project-filename-alist)
+       (with-current-buffer
+         (find-file-noselect (cdr i))
+         (org-jira-refresh-issues-in-buffer)
+         (run-with-timer 10 nil #'save-buffer)
+         )))
+   #+end_src
+* Custom Hooks
+** Format on save for prog-mode
+   #+begin_src emacs-lisp
+     (add-hook 'before-save-hook (lambda ()
+                                   (lsp-format-buffer)
+                                   (delete-trailing-whitespace)
+                                   (unless (eq major-mode 'typescript-mode)
+                                     (message "not formatting")
+                                     (lsp-organize-imports))
+                                   ))
+   #+end_src
+   
+* Org Mode
+  
+  #+begin_src emacs-lisp
+        ;; setup HEAVILY inspired by
+        ;; https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
+
+
+        (setq org-agenda-files '("~/.org-jira/SHOP.org"
+                                 "~/gtd/inbox.org"
+                                 "~/gtd/gtd.org"
+                                 "~/gtd/tickler.org"
+                                 "~/gtd/schedule.org"))
+
+        (setq org-refile-targets '(("~/gtd/gtd.org" :maxlevel . 3)
+                                   ("~/gtd/someday.org" :level . 1)
+                                   ("~/gtd/tickler.org" :maxlevel . 2)))
+
+        (setq org-capture-templates '(("t" "Todo [inbox]" entry
+                                       (file+headline "~/gtd/inbox.org" "Tasks")
+                                       "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n")
+                                      ("T" "Tickler" entry
+                                       (file+headline "~/gtd/tickler.org" "Tickler")
+                                       "* %i%? \n %U")
+                                      ("N" "Note [notes]" entry
+                                       (file+headline "~/gtd/notes.org" "Notes")
+                                       "* NOTE %i%?")))
+
+        (setq org-todo-keywords '((sequence "TODO(t)" "WAITING(w)" "IN_PROGRESS(i)" "|" "DONE(d)" "CANCELLED(c)")))
+
+        (defun my-org-agenda-skip-all-siblings-but-first ()
+          "Skip all but the first non-done entry."
+          (let (should-skip-entry)
+            (unless (org-current-is-todo)
+              (setq should-skip-entry t))
+            (save-excursion
+              (while (and (not should-skip-entry) (org-goto-sibling t))
+                (when (org-current-is-todo)
+                  (setq should-skip-entry t))))
+            (when should-skip-entry
+              (or (outline-next-heading)
+                  (goto-char (point-max))))))
+
+        (defun org-current-is-todo ()
+          (string= "TODO" (org-get-todo-state)))
+
+        (setq org-agenda-custom-commands 
+              '(("p" "Personal" tags-todo "@personal"
+                 ((org-agenda-overriding-header "Personal")))
+                ("b" "Bloomon" tags-todo "@bloomon"
+                 ((org-agenda-overriding-header "Bloomon")))))
+
+        ;; save org clocks to disk and allow them to be fetched on next
+        ;; startup
+        (setq org-clock-persist 'history)
+        (org-clock-persistence-insinuate)
+
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;; org-mode agenda options                                                ;;
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;;open agenda in current window
+        (setq org-agenda-window-setup (quote current-window))
+        ;;warn me of any deadlines in next 7 days
+        (setq org-deadline-warning-days 7)
+        ;;show me tasks scheduled or due in next fortnight
+        (setq org-agenda-span (quote fortnight))
+        ;;don't show tasks as scheduled if they are already shown as a deadline
+        (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+        ;;don't give awarning colour to tasks with impending deadlines
+        ;;if they are scheduled to be done
+        (setq org-agenda-skip-deadline-prewarning-if-scheduled (quote pre-scheduled))
+        ;;don't show tasks that are scheduled or have deadlines in the
+        ;;normal todo list
+        (setq org-agenda-todo-ignore-deadlines (quote all))
+        (setq org-agenda-todo-ignore-scheduled (quote all))
+        ;;sort tasks in order of when they are due and then by priority
+        (setq org-agenda-sorting-strategy
+          (quote
+           ((agenda deadline-up priority-down)
+            (todo priority-down category-keep)
+            (tags priority-down category-keep)
+            (search category-keep))))
+  #+end_src
+  
+  Integrate Org with projectile for capturing todos and managing project state
+  #+begin_src emacs-lisp
+    (use-package org-projectile
+      :ensure t
+      :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+             ("C-c c" . org-capture))
+      :config
+      (progn
+        (org-projectile-per-project)
+        (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+        (push (org-projectile-project-todo-entry) org-capture-templates)
+        (add-to-list 'org-capture-templates
+                     (org-projectile-project-todo-entry
+                      :capture-character "p"))))
+  #+end_src
+
+  Org block editing auto completion
+
+  #+begin_src emacs-lisp
+    (use-package company-org-block
+      :ensure t
+      :custom
+      (company-org-block-edit-style 'inline) ;; 'auto, 'prompt, or 'inline
+      :hook ((org-mode . (lambda ()
+                           (setq-local company-backends '(company-org-block))
+                           (company-mode +1)))))
+  #+end_src
+
+  Add support for syncing Jira to an org file
+
+  #+begin_src emacs-lisp :lexical no
+    (use-package org-jira
+      :ensure t
+      :init
+      (unless (file-exists-p "~/.org-jira")
+        (make-directory "~/.org-jira"))
+      :config
+      (setq org-jira-jira-status-to-org-keyword-alist
+       '(("In Progress" . "IN_PROGRESS")
+         ("Selected for Development" . "TODO")
+         ("Ready for deployment" . "WAITING")
+         ("DONE" . "Done")))
+      (setq jiralib-url "https://bloomon.atlassian.net"))
+  #+end_src
+
+  Spruce up how org mode looks with custom bullet icons
+  
+  #+begin_src emacs-lisp :lexical no
+    (use-package org-superstar
+            :ensure t
+            :config
+            (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
+            :init
+            (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+            (add-hook 'org-jira-mode-hook (lambda () (org-superstar-mode 1))))
+  #+end_src
+  
+* Appearance
+**  Theme
+  #+begin_src emacs-lisp
+    (use-package doom-themes
+      :ensure
+      :init
+      (load-theme 'doom-peacock t)
+      :config
+      (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+            doom-themes-enable-italic nil
+            doom-neotree-line-spacing 0) ; if nil, italics is universally disabled
+      (doom-themes-neotree-config)
+      (doom-themes-org-config)
+      (doom-themes-visual-bell-config))
+
+
+    ;; (use-package doom-modeline
+    ;;   :ensure t
+    ;;   :init (doom-modeline-mode 1))
+
+    (use-package doom-modeline
+      :init
+      ;; show doom-modeline at the same time with dashboard
+      (add-hook 'emacs-startup-hook 'doom-modeline-mode -100)
+      :custom
+      (doom-modeline-buffer-encoding nil)
+      (doom-modeline-vcs-max-length 40)
+      (doom-modeline-bar-width 1)
+      (doom-modeline-env-python-executable "python")
+      :hook
+      (dashboard-after-initialize . column-number-mode))
+  #+end_src
+
+**  Relative line numbers
+  #+begin_src emacs-lisp
+    (use-package linum-relative
+      :ensure
+      :config
+      (setq linum-relative-backend 'display-line-numbers-mode)
+      :init
+      (linum-relative-toggle))
+  #+end_src
+
+**  Ensure icons work correctly
+  #+begin_src emacs-lisp
+    (use-package all-the-icons
+      :ensure)
+  #+end_src
+
+**  Rainbow delimiters on all programming modes
+   #+begin_src emacs-lisp
+     (use-package smartparens
+       :ensure t
+       :hook
+       (prog-mode . smartparens-mode))
+
+     (use-package rainbow-delimiters
+       :ensure t
+       :hook
+       (prog-mode . rainbow-delimiters-mode))
+   #+end_src
+   
+**  Fill column indicator
+   #+begin_src emacs-lisp
+     (setq-default fill-column 88)
+     (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+   #+end_src
+
+** Highlight TODOs
+   #+begin_src emacs-lisp
+     (use-package hl-todo
+       :ensure
+       :init
+       (global-hl-todo-mode))
+   #+end_src
+
+** Highlight git diffs on side of buffer
+   #+begin_src emacs-lisp
+     (use-package diff-hl
+       :ensure t
+       :init (global-diff-hl-mode))
+   #+end_src
+
+** Highlight current line
+   #+begin_src emacs-lisp :lexical no
+     (global-hl-line-mode)
+     (blink-cursor-mode -1)
+   #+end_src
+
+** Dashboard
+   #+begin_src emacs-lisp :lexical no
+     (use-package dashboard
+       :ensure t
+       :config
+       (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+       (setq dashboard-filter-agenda-entry 'dashboard-filter-agenda-by-todo)
+       (setq dashboard-center-content t)
+       (setq dashboard-startup-banner 2)
+       (setq dashboard-set-heading-icons t)
+       (setq dashboard-set-file-icons t)
+       (setq dashboard-items '((agenda . 10)
+                               (projects . 7)))
+       (setq dashboard-set-navigator t)  
+
+       (dashboard-setup-startup-hook))
+   #+end_src
+
+* Sensible Defaults
+
+** disable lockfiles
+  #+begin_src emacs-lisp
+    (setq create-lockfiles nil)
+  #+end_src
+** disable file backups
+   #+begin_src emacs-lisp
+     (setq make-backup-files nil)
+   #+end_src
+** enable recent files
+  #+begin_src emacs-lisp
+    (recentf-mode)
+  #+end_src
+
+** disable macos fullscreen
+  #+begin_src emacs-lisp
+    (if (eq system-type 'darwin)
+        (setq ns-use-native-fullscreen nil))
+  #+end_src
+
+** set backup diretory
+   #+begin_src emacs-lisp
+     (setq backup-directory-alist
+           `(("." . ,(concat user-emacs-directory "backups"))))
+     (setq auto-save-file-name-transforms
+           `((".*" "~/.emacs-saves/" t)))
+   #+end_src
+
+** disable eldoc because it sucks
+   #+begin_src emacs-lisp
+     (global-eldoc-mode -1)
+   #+end_src
+
+** enable line numbers
+   #+begin_src emacs-lisp
+     (if (fboundp 'global-display-line-numbers-mode)
+         (global-display-line-numbers-mode t)
+       (global-linum-mode))
+   #+end_src
+
+** aMtching paranthesis highlighting
+   #+begin_src emacs-lisp
+     (setq show-paren-when-point-inside-paren t)
+     (show-paren-mode t)
+   #+end_src
+
+** Auto indent on RET
+   #+begin_src emacs-lisp
+     (electric-indent-mode)
+   #+end_src   
+
+** Disble Splash screen on startup
+   # #+begin_src emacs-lisp
+   #   (setq inhibit-splash-screen t)
+   # #+end_src
+
+** Spaces instead of tabs
+   #+begin_src emacs-lisp
+     (setq-default indent-tabs-mode nil)
+     (setq-default tab-width 2)
+   #+end_src
+
+** y-n instead of yes-no
+   #+begin_src emacs-lisp
+     (fset 'yes-or-no-p 'y-or-n-p)
+   #+end_src
+
+** Disable horrible ui elements
+   #+begin_src emacs-lisp
+     (menu-bar-mode -1)
+     (toggle-scroll-bar -1)
+     (tool-bar-mode -1)
+   #+end_src
+
+** disable line wrapping
+   #+begin_src emacs-lisp
+     (setq-default truncate-lines t)
+   #+end_src
+
+** load $PATH from shell
+   #+begin_src emacs-lisp
+     (use-package exec-path-from-shell
+       :ensure
+       :init
+       (when (memq window-system '(mac ns x))
+         (exec-path-from-shell-initialize)))
+   #+end_src
+
+** Set the default directory
+   #+begin_src emacs-lisp
+     (setq default-directory (file-name-as-directory (substitute-in-file-name "$HOME")))
+   #+end_src
+
+** If pasting over selected text, delete the selection rather than append
+   #+begin_src emacs-lisp
+     (delete-selection-mode 1)
+   #+end_src
+   
+** Smart paranthesis balancing
+   #+begin_src emacs-lisp
+     (use-package smartparens
+       :ensure t
+       :hook
+       (prog-mode . smartparens-mode))
+   #+end_src
+
+** Delete all whitespace (hungry-delete)
+   Deletes all whitespaces in the direction you are deleting
+   #+begin_src emacs-lisp
+     (use-package hungry-delete
+       :ensure
+       :init
+       (global-hungry-delete-mode))
+   #+end_src
+
+** Undo history (undo-tree)
+   #+begin_src emacs-lisp
+     (use-package undo-tree
+       :ensure
+       :config
+       (setq undo-tree-enable-undo-in-region nil
+             undo-tree-auto-save-history t
+             undo-tree-visualizer-diff t
+             undo-tree-history-directory-alist
+             `((".*" . ,(concat user-emacs-directory "undo-history"))))
+       :init
+       (global-undo-tree-mode))
+   #+end_src
+
+** Silver Searcher (ag) for seraching
+   #+begin_src emacs-lisp
+     (use-package ag
+       :ensure)
+   #+end_src
+
+** git (magit)
+   #+begin_src emacs-lisp
+     (use-package magit
+       :ensure)
+
+     (use-package with-editor
+       :ensure)
+   #+end_src
+** project management
+   #+begin_src emacs-lisp
+     (use-package projectile
+       :ensure t
+       :after helm
+       :config
+       (progn
+         (setq projectile-completion-system 'helm)
+         (setq projectile-auto-discover nil)
+         (setq projectile-switch-project-action 'projectile-find-file)
+         (add-to-list 'projectile-ignored-projects `,(concat (getenv "HOME") "/"))
+         (setq projectile-enable-caching t) ; Enable caching, otherwise find-file is slow
+         (projectile-mode 1)))
+   #+end_src
+** side bar tree project view (Treemacs)
+   #+begin_src emacs-lisp
+     (use-package treemacs
+       :ensure t
+       :defer t
+       :config
+       (progn
+         (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+               treemacs-deferred-git-apply-delay      0.5
+               treemacs-directory-name-transformer    #'identity
+               treemacs-display-in-side-window        t
+               treemacs-eldoc-display                 t
+               treemacs-file-event-delay              5000
+               treemacs-file-extension-regex          treemacs-last-period-regex-value
+               treemacs-file-follow-delay             0.2
+               treemacs-file-name-transformer         #'identity
+               treemacs-follow-after-init             t
+               treemacs-git-command-pipe              ""
+               treemacs-goto-tag-strategy             'refetch-index
+               treemacs-indentation                   2
+               treemacs-indentation-string            " "
+               treemacs-is-never-other-window         nil
+               treemacs-max-git-entries               5000
+               treemacs-missing-project-action        'ask
+               treemacs-no-png-images                 nil
+               treemacs-no-delete-other-windows       t
+               treemacs-project-follow-cleanup        nil
+               treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+               treemacs-position                      'left
+               treemacs-recenter-distance             0.1
+               treemacs-recenter-after-file-follow    nil
+               treemacs-recenter-after-tag-follow     nil
+               treemacs-recenter-after-project-jump   'always
+               treemacs-recenter-after-project-expand 'on-distance
+               treemacs-show-cursor                   nil
+               treemacs-show-hidden-files             t
+               treemacs-silent-filewatch              nil
+               treemacs-silent-refresh                nil
+               treemacs-sorting                       'alphabetic-asc
+               treemacs-space-between-root-nodes      t
+               treemacs-tag-follow-cleanup            t
+               treemacs-tag-follow-delay              1.5
+               treemacs-width                         35)
+
+         ;; The default width and height of the icons is 22 pixels. If you are
+         ;; using a Hi-DPI display, uncomment this to double the icon size.
+         ;;(treemacs-resize-icons 44)
+
+         (treemacs-follow-mode t)
+         (treemacs-filewatch-mode t)
+         (treemacs-fringe-indicator-mode t)
+         (pcase (cons (not (null (executable-find "git")))
+                      (not (null treemacs-python-executable)))
+           (`(t . t)
+            (treemacs-git-mode 'deferred))
+           (`(t . _)
+            (treemacs-git-mode 'simple)))))
+   #+end_src
+
+   Lets make it work with projectile and git for project specific view
+
+   #+begin_src emacs-lisp
+     (use-package treemacs-projectile
+            :after treemacs projectile
+            :ensure t)
+
+     (use-package treemacs-magit
+       :after treemacs magit
+       :ensure t)
+   #+end_src
+
+   Finally, lets make it look nice with dired icons
+* Error Checking
+** Flycheck
+  #+begin_src emacs-lisp
+    (use-package flycheck
+      :ensure t
+      :init (global-flycheck-mode)
+      :custom
+      (flycheck-display-errors-delay .3))
+
+    (use-package flycheck-pos-tip
+      :ensure t
+      :after flycheck
+      :init (flycheck-pos-tip-mode))
+
+    (use-package helm-flycheck
+      :ensure t
+      :after flycheck)
+
+    (add-hook 'markdown-mode-hook 'flyspell-mode)
+    (add-hook 'org-src-mode-hook 'flyspell-mode)
+  #+end_src
+
+* Autocomplete
+  #+begin_src emacs-lisp
+    (use-package company
+      :ensure
+      :init (global-company-mode)
+      :bind (:map company-active-map
+                  ("C-n" . company-select-next-or-abort)
+                  ("C-p" . company-select-previous-or-abort)))
+  #+end_src
+
+** Snippet expansion support
+
+   #+begin_src emacs-lisp
+     (use-package yasnippet
+         :ensure t
+         :config
+         (setq
+          yas-verbosity 1
+          yas-wrap-around-region t)
+
+         (yas-reload-all)
+         (yas-global-mode))
+
+     (with-eval-after-load 'yasnippet
+     (setq yas-snippet-dirs '(yasnippet-snippets-dir)))
+
+     (use-package yasnippet-snippets
+       :after yasnippet
+       :ensure t)
+   #+end_src
+
+* Navigation
+** Navigation between windows (Ace window)
+   #+begin_src emacs-lisp
+     (use-package ace-window
+               :ensure
+               :bind( ("C-x o" . ace-window))
+               :config
+               (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+     (use-package winum
+       :ensure)
+   #+end_src
+** Text Selection (expand region)
+   #+begin_src emacs-lisp
+     (use-package expand-region
+       :ensure
+       :config
+       (global-set-key (kbd "C-=") 'er/expand-region)
+       (global-set-key (kbd "C--") 'er/contract-region))
+   #+end_src
+** Move selection up and down
+   #+begin_src emacs-lisp
+     (use-package drag-stuff
+       :ensure t
+       :config
+       (global-set-key (kbd "C-s-p") #'drag-stuff-up)
+       (global-set-key (kbd "C-s-n") #'drag-stuff-down))
+   #+end_src
+** General Emacs navigation (helm)
+   #+begin_src emacs-lisp
+     (use-package helm
+       :ensure
+       :demand t ;stop lazy loading which breaks projectile
+       :bind( ("M-x" . helm-M-x)
+              ("C-x C-f" . helm-find-files)
+              ("C-x C-b" . helm-buffers-list)
+              ("C-x b" . helm-buffers-list))
+       :config
+       (progn
+         (require 'helm-config)
+         (require 'helm-for-files)
+         (helm-mode 1)))
+   #+end_src
+
+   As we also use silver searcher, enable silver searcher searching
+
+   #+begin_src emacs-lisp
+     (use-package helm-ag
+       :ensure t
+       :after ag
+       :config
+       (progn
+         (custom-set-variables
+          ;; '(helm-follow-mode-persistent t)
+          '(helm-ag-base-command "ag --vimgrep")
+          '(helm-scroll-amount 4)
+          '(helm-ag-use-temp-buffer t)
+          '(helm-execute-persistent-action "<tab>"))
+         ;; ensure helm window always opens at bottom of frame
+         (add-to-list 'display-buffer-alist
+                      `(,(rx bos "*helm" (* not-newline) "*" eos)
+                        (display-buffer-in-side-window)
+                        (inhibit-same-window . t)
+                        (window-height . 0.4)))))
+   #+end_src
+
+   Similarly, enable the helm mini bufffer for projectile interactions
+
+   #+begin_src emacs-lisp
+     (use-package helm-projectile
+       :ensure t
+       :after (:all helm projectile)
+       :init
+       (helm-projectile-on))
+   #+end_src
+
+   Enable helm for LSP interactions
+   #+begin_src emacs-lisp
+     (use-package helm-lsp
+       :ensure t
+       :commands helm-lsp-workspace-symbol)
+   #+end_src
+
+   Make tab be the autocomplete option when using helm
+
+     #+begin_src emacs-lisp
+       (with-eval-after-load 'helm-files
+         (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+         )
+     #+end_src
+
+     Make helm look interesting by using posframe
+
+     #+begin_src emacs-lisp :lexical no
+       (use-package helm-posframe
+         :ensure t
+         :init
+         (helm-posframe-enable))
+     #+end_src
+
+     And lets add some icons
+
+     #+begin_src emacs-lisp :lexical no
+       (use-package helm-icons
+         :ensure t
+         :after helm
+         :config
+         (treemacs-resize-icons fk/default-icon-size)
+         :init
+         (helm-icons-enable))
+     #+end_src
+** Jumping around the buffer (avy)
+   #+begin_src emacs-lisp
+     (use-package avy
+       :ensure
+       :bind (("C-:" . avy-goto-char)))
+   #+end_src
+* Programming Languages
+** C Sharp
+   #+begin_src emacs-lisp
+     (use-package csharp-mode
+       :ensure)
+   #+end_src
+** YAML & JSON
+   #+begin_src emacs-lisp
+     (use-package yaml-mode
+       :ensure
+       :init
+       (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+       :hook
+       (yaml-mode-hook . (lambda ()
+                            (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
+
+     (use-package json-mode
+       :ensure
+       :init
+       (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode)))
+   #+end_src
+** Restclient mode (REST API testing)
+   #+begin_src emacs-lisp
+     (use-package restclient
+       :ensure t
+       :init
+       (add-to-list 'auto-mode-alist '("\\.rcm\\'" . restclient-mode)))
+   #+end_src
+** Dockerfiles
+   #+begin_src emacs-lisp
+     (use-package dockerfile-mode
+       :ensure t
+       :init
+       (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+   #+end_src
+** Markdown
+   #+begin_src emacs-lisp
+     (use-package markdown-mode
+       :ensure t
+       :commands (markdown-mode gfm-mode)
+       :mode (("README\\.md\\'" . gfm-mode)
+              ("\\.md\\'" . markdown-mode)
+              ("\\.markdown\\'" . markdown-mode))
+       :init (setq markdown-command "multimarkdown")
+       :config (add-hook 'gfm-mode-hook  (smartparens-global-mode)))
+   #+end_src
+** Golang
+   Add golang mode and configure golang specific language server settings
+   #+begin_src emacs-lisp
+     (use-package go-mode
+            :ensure t)
+
+     (add-hook 'lsp-after-initialize-hook (lambda ()
+                                            (setq lsp-gopls-staticcheck t)
+                                            (setq lsp-eldoc-render-all t)
+                                            (setq lsp-gopls-complete-unimported t)))
+   #+end_src
+** Haskell
+   #+begin_src emacs-lisp
+     (use-package haskell-mode
+       :ensure t)
+
+     (use-package lsp-haskell
+       :ensure t)
+   #+end_src
+** Javascript (+Typescript)
+   
+   #+begin_src emacs-lisp
+     (use-package rjsx-mode
+       :ensure t
+       :init
+       (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
+       (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode))
+       (setq js-indent-level 2))
+
+     (use-package js2-refactor
+       :ensure t
+       :hook
+       (rjsq-mode-hook . js2-refactor-mode)
+       :init
+       (setq js2-basic-offset 2)
+       )
+
+     (use-package web-mode
+       :ensure t
+       :init
+       (setq web-mode-markup-indent-offset 2)
+       (setq web-mode-css-indent-offset 2)
+       (setq web-mode-code-indent-offset 2))
+
+     (use-package typescript-mode
+       :ensure
+       :init
+       (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+       (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-mode))
+       (setq typescript-indent-level 2))
+   #+end_src
+** PHP
+   #+begin_src emacs-lisp
+     (use-package php-mode
+       :ensure
+       :init
+       (add-to-list 'auto-mode-alist '("\\.php\\'" . php-mode)))
+   #+end_src
+** Python
+   #+begin_src emacs-lisp
+     (use-package python
+       :config
+       (setq python-eldoc-get-doc nil))
+   #+end_src
+
+   For managing virtual-envs we use pyvenv
+
+   #+begin_src emacs-lisp
+     (use-package pyvenv
+       :ensure t
+       :config
+       (setq pyvenv-mode-line-indicator
+             '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
+       (pyvenv-mode +1))
+   #+end_src
+
+   Configure the language server for python
+
+   #+begin_src emacs-lisp :lexical no
+     (with-eval-after-load "lsp-mode"
+       (setq lsp-pyls-configuration-sources ["flake8"])
+       (setq lsp-pyls-plugins-pycodestyle-enabled nil)
+       (setq lsp-pyls-plugins-flake8-enabled t)
+       (setq lsp-pyls-plugins-flake8-config "~/.config/flake8")
+       (setq lsp-pyls-plugins-pylint-enabled nil)
+       (setq lsp-pyls-plugins-pydocstyle-enabled nil)
+       (setq lsp-pyls-plugins-autopep8-enabled nil))
+   #+end_src
+* Keybindings
+
+  First, ensure that we pull in hydra and which key as it makes working with keybindings
+  very nice
+  #+begin_src emacs-lisp
+    (use-package hydra
+          :ensure)
+
+    (use-package which-key
+      :ensure
+      :init
+      (which-key-mode)
+      (which-key-setup-side-window-bottom)
+      (which-key-setup-minibuffer)
+      :config
+      (setq which-key-idle-delay 0.5)
+      (setq which-key-idle-secondary-delay 0.05))
+  #+end_src
+
+  If we're on macos (and using GUI emacs) swap around option and command keys
+  #+begin_src emacs-lisp
+    (when (display-graphic-p) 
+      (setq mac-option-key-is-meta nil
+          mac-command-key-is-meta t
+          mac-command-modifier 'meta
+          mac-option-modifier 'none))
+  #+end_src
+
+** Buffer Manipulations 
+   #+begin_src emacs-lisp
+     (defhydra hydra-buffer (:color blue)
+       "Buffers"
+       ("k" kill-buffer "kill buffer")
+       ("i" indent-buffer "indent buffer"))
+   #+end_src
+
+** File Interactions
+   #+begin_src emacs-lisp
+     (defhydra hydra-file (:color blue)
+       "Files"
+       ("D" delete-file-and-buffer "delete file")
+       ("R" rename-file-and-buffer "rename file"))
+   #+end_src
+
+** In-buffer actions
+   #+begin_src emacs-lisp
+     (defhydra hydra-comments (:color blue)
+       ("l" comment-line "comment line"))
+
+     (defhydra hydra-errors (:color blue)
+       "Errors"
+       ("l" helm-flycheck "flycheck errors"))
+
+     (defhydra hydra-search (:color blue)
+       ("s" helm-occur))
+
+     (defhydra hydra-ring (:color blue)
+       ("y" helm-show-kill-ring))
+   #+end_src
+
+** Emacs Toggles
+   #+begin_src emacs-lisp
+     (defhydra hydra-toggles (:color blue)
+       ("f" toggle-frame-fullscreen "fullscreen")
+       ("r" load-init-el "reload config"))
+   #+end_src
+
+** Project Interactions
+
+   #+begin_src emacs-lisp
+         (defhydra hydra-projectile (:color teal
+                                     :hint  nil)
+           "
+          PROJECTILE: %(if (fboundp 'projectile-project-root) (projectile-project-root) \"TBD\")
+     ^^^^       Find               ^^   Search/Tags       ^^^^       Buffers               ^^   Cache                     ^^^^       Other
+     ^^^^--------------------------^^---------------------^^^^-----------------------------^^------------------------------------------------------------------
+     ^^    _f_: file               _a_: ag                ^^    _i_: Ibuffer               _c_: cache clear               ^^    _E_: edit project's .dir-locals.el
+     ^^    _F_: file dwim          _G_: update gtags      ^^    _b_: switch to buffer      _x_: remove known project      _s-p_/_p_: switch to other project
+     ^^    _d_: file curr dir      _o_: multi-occur       _K_/_s-k_: kill all buffers      _X_: cleanup non-existing      ^^    _g_: switch to Magit status of other project
+     ^^    _l_: file literally     ^^                     ^^^^                             _z_: cache current             ^^    _P_: switch to an open project
+     ^^    _r_: recent file        ^^                     ^^^^                             ^^                             ^^    _D_: find dir
+     ^^    ^^^^                    ^^^^                   ^^^^                             ^^                             ^^    _v_: activate virtualenv for project
+     "
+           ("a"   projectile-ag)
+           ("b"   helm-projectile-switch-to-buffer)
+           ("c"   projectile-invalidate-cache)
+           ("d"   projectile-find-file-in-directory)
+           ("f"   helm-projectile-find-file)
+           ("F"   projectile-find-file-dwim)
+           ("D"   projectile-find-dir)
+           ("E"   projectile-edit-dir-locals)
+           ("g"   modi/projectile-switch-project-magit-status)
+           ("G"   ggtags-update-tags)
+           ("i"   projectile-ibuffer)
+           ("t"   org-todo-list)
+           ("v"   auto-pyvenv)
+           ("K"   projectile-kill-buffers)
+           ("s-k" projectile-kill-buffers)
+           ("l"   modi/projectile-find-file-literally)
+           ("m"   projectile-multi-occur)
+           ("p"   helm-projectile-switch-project)
+           ("s"   helm-projectile-ag)
+           ("s-p" projectile-switch-project)
+           ("P"   projectile-switch-open-project)
+           ("o"   projectile-switch-project)
+           ("r"   projectile-recentf)
+           ("x"   projectile-remove-known-project)
+           ("X"   projectile-cleanup-known-projects)
+           ("z"   projectile-cache-current-file)
+           ("4"   hydra-projectile-other-window/body "other window")
+           ("q"   nil "cancel" :color blue))
+   #+end_src
+   
+** LSP Keybindings
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'hydra
+       (defhydra hydra-lsp (:exit t :hint nil :color blue)
+       "
+      Buffer^^               Server^^                   Symbol
+     -------------------------------------------------------------------------------------
+      [_f_] format           [_M-r_] restart            [_d_] declaration  [_i_] implementation  [_o_] documentation
+      [_m_] imenu            [_S_]   shutdown           [_D_] definition   [_t_] type            [_r_] rename
+      [_x_] execute action   [_M-s_] describe session   [_R_] references   [_s_] signature"
+       ("d" lsp-find-declaration)
+       ("D" lsp-ui-peek-find-definitions)
+       ("R" lsp-ui-peek-find-references)
+       ("i" lsp-ui-peek-find-implementation)
+       ("t" lsp-find-type-definition)
+       ("s" lsp-signature-help)
+       ("o" lsp-describe-thing-at-point)
+       ("r" lsp-rename)
+       ("f" lsp-format-buffer)
+       ("m" lsp-ui-imenu)
+       ("x" lsp-execute-code-action)
+       ("M-s" lsp-describe-session)
+       ("M-r" lsp-workspace-restart)
+       ("S" lsp-workspace-shutdown)))
+   #+end_src
+
+** Git keybindings
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'hydra
+       (defhydra hydra-magit (:color blue :columns 8)
+       "Magit"
+       ("s" magit-status "status")
+       ("C" magit-checkout "checkout")
+       ("v" magit-show-refs "branches")
+       ("f" magit-find-file-other-window "find file")
+       ("m" magit-merge "merge")
+       ("l" magit-log "log")
+       ("!" magit-git-command "command")
+       ("$" magit-process-buffer "process")))
+
+   #+end_src
+** Top Level Hydra
+   #+begin_src emacs-lisp
+     (defhydra hydra-main (:color blue
+                           :hint nil)
+      "
+     -------------------------------------------------------------------------------------
+      [_b_] buffers    [_g_] git         [_t_] toggles  [_<tab>_] last-buffer
+      [_f_] files      [_e_] errors      [_s_] search   [_*_] helm-ag
+      [_p_] projects   [_c_] comment     [_r_] ring     [_w_] workspaces"
+ 
+       ("<tab>" (switch-to-buffer nil))
+       ("b" hydra-buffer/body)
+       ("f" hydra-file/body)
+       ("p" hydra-projectile/body)
+       ("g" hydra-magit/body)
+       ("e" hydra-errors/body)
+       ("c" hydra-comments/body)
+       ("t" hydra-toggles/body)
+       ("o" hydra-open/body)
+       ("s" hydra-search/body)
+       ("r" hydra-ring/body)
+       ("*" helm-ag)
+       ("w" hydra-persp/body))
+   #+end_src
+
+** Global Key bindings
+   #+begin_src emacs-lisp
+     (with-eval-after-load "lsp-mode"
+       (define-key lsp-mode-map (kbd "M-RET") 'hydra-lsp/body))
+     (global-set-key (kbd "M-m") 'hydra-main/body)
+     (global-set-key (kbd "M-RET") 'hydra-lsp/body)
+     (global-set-key (kbd "M-o")  'other-window)
+     (global-set-key (kbd "C-;")  'comment-line)
+     ;; keybindings
+     (global-set-key (kbd "C-c c") 'org-capture)
+     (global-set-key (kbd "C-c a") 'org-agenda)
+     (global-set-key (kbd "M-0") 'treemacs-display-current-project-exclusively)
+   #+end_src
+
+* Language Server Protocol (LSP)
+  #+begin_src emacs-lisp
+    (use-package lsp-mode
+      :ensure t
+      :init (progn
+              (setq lsp-keymap-prefix "M-RET")
+              (setq lsp-auto-guess-root t)
+              (setq lsp-eldoc-enable-hover nil)
+              (setq lsp-completion-enable t)
+              (setq lsp-enable-indentation t)
+              (setq lsp-before-save-edits t)
+              (setq lsp-signature-render-documentation nil)
+              (setq lsp-pyls-configuration-sources ["flake8"])
+              (setq lsp-pyls-plugins-pycodestyle-enabled nil)
+              (setq lsp-pyls-plugins-flake8-enabled t)
+              (setq lsp-pyls-plugins-pylint-enabled nil)
+              (setq lsp-pyls-plugins-pydocstyle-enabled nil)
+              (setq lsp-pyls-plugins-autopep8-enabled nil)
+              (setq lsp-pyls-server-command "pylsp")
+              )
+      :hook (
+             ;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+             (lsp-mode . lsp-enable-which-key-integration)
+             (python-mode . lsp-deferred)
+             (rjsx-mode . lsp-deferred)
+             (js2-mode . lsp-deferred)
+             (php-mode . lsp-deferred)
+             (csharp-mode . lsp-deferred)
+             (typescript-mode . lsp-deferred)
+             (go-mode . lsp-deferred)
+             (elixir-mode . lsp-deferred)
+             (haskell-mode . lsp-deferred)
+             (haskell-literate-mode . lsp-deferred)
+             (java-mode . lsp-deferred)
+             )
+      :config
+      ;; (lsp-register-custom-settings
+      ;;  '(("pylsp.configurationSources" '("flake8"))
+      ;;    ("pylsp.plugins.pyls_mypy.enabled" t t)
+      ;;    ("pylsp.plugins.pyls_mypy.live_mode" :json-false)
+      ;;    ("pylsp.plugins.pyls_isort.enabled" t t)
+      ;;    ("pylsp.plugins.pyls_black.enabled" t t)
+      ;;    ("pylsp.plugins.pycodestyle.enabled" :json-false)
+      ;;    ("pylsp.plugins.pylint.enabled" :json-false)
+      ;;    ("pylsp.plugins.pydocstyle.enabled" :json-false)
+      ;;    ("pylsp.plugins.autopep8.enabled" :json-false)
+      ;;    ("pylsp.plugins.flake8.enabled" t)))
+      (setq lsp-eldoc-hook nil)
+      :commands lsp lsp-deferred)
+  #+end_src
+
+  Show LSP errors that occur in the treemacs-window
+  #+begin_src emacs-lisp
+    (use-package lsp-treemacs
+      :ensure t
+      :commands lsp-treemacs-errors-list)
+  #+end_src
+
