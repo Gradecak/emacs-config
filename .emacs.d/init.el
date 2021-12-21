@@ -14,7 +14,7 @@
 ;; 1. Install an Emacs version that does support SSL and be safe.
 ;; 2. Remove this warning from your init file so you won't see it again."))
 ;;   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;;   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t) 
+;;   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
 ;;   ;; (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
 ;;   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
 ;;   ;; and `package-pinned-packages`. Most users will not need or want to do this.
@@ -107,7 +107,7 @@
  '(helm-execute-persistent-action "<tab>")
  '(helm-scroll-amount 4)
  '(package-selected-packages
-   '(helm-icons helm-posframe org-superstar org-jira dashboard winum yasnippet-snippets yaml-mode which-key web-mode vue-mode use-package undo-tree typescript-mode treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired terraform-mode smartparens rjsx-mode rainbow-delimiters pyvenv php-mode org-projectile lsp-ui lsp-java lsp-haskell linum-relative json-reformat json-mode js2-refactor hungry-delete hl-todo helm-projectile helm-lsp helm-flycheck helm-ag groovy-mode go-mode gh-md flycheck-pos-tip expand-region exec-path-from-shell elixir-mode drag-stuff doom-themes doom-modeline dockerfile-mode diff-hl csharp-mode company-restclient ag))
+   '(ox-rst csv-mode meow helm-tramp embark flycheck-mypy elpy forge helm-icons helm-posframe org-superstar org-jira dashboard winum yasnippet-snippets yaml-mode which-key web-mode vue-mode use-package undo-tree typescript-mode treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired terraform-mode smartparens rjsx-mode rainbow-delimiters pyvenv php-mode org-projectile lsp-ui lsp-java lsp-haskell linum-relative json-reformat json-mode js2-refactor hungry-delete hl-todo helm-projectile helm-lsp helm-flycheck helm-ag groovy-mode go-mode gh-md flycheck-pos-tip expand-region exec-path-from-shell elixir-mode drag-stuff doom-themes doom-modeline dockerfile-mode diff-hl csharp-mode company-restclient ag))
  '(which-key-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
