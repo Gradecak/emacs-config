@@ -85,26 +85,35 @@
          ))
    #+end_src
 ** Bloomon-cli Specific stuff
+
    #+begin_src emacs-lisp
+     (defun bloomon-available-envs ()
+       (let ((files (directory-files (projectile-project-root))))
+         (remq nil (mapcar
+                    (lambda (file) (save-match-data
+                                     (and (string-match "secrets.\\(.*\\).enc" file)
+                                          (message (match-string 1 file)))))
+                    files))))
+
      (defun bloomon-cli-path ()
        (replace-regexp-in-string "\n$" "" (shell-command-to-string "which bloomon")))
 
      (defun _bloomon-exec (cmd)
-       (start-process-shell-command "" "out" (concat (bloomon-cli-path) cmd))
+       (start-process-shell-command "" "out" (concat (bloomon-cli-path) cmd)))
 
      (defun _bloomon-prompt-secrets (action)
        (helm :sources
-	     (helm-make-source "Bloomon" 'helm-source-sync
-	       :candidates `("dev" "stg" "prod")
-	       :action action
-	       )))
+             (helm-make-source "Bloomon" 'helm-source-sync
+               :candidates (bloomon-available-envs)
+               :action action
+               )))
 
      (defun bloomon-encrypt-decrypt (cb)
        (let* ((root (projectile-project-root))
-	     (default-directory root))
-	 (_bloomon-prompt-secrets (lambda (env)
-				    (message "operation %s for %s secrets (%s)" cb env root)
-				    (_bloomon-exec (concat cb env))))))
+              (default-directory root))
+         (_bloomon-prompt-secrets (lambda (env)
+                                    (message "operation %s for %s secrets (%s)" cb env root)
+                                    (_bloomon-exec (concat cb env))))))
 
      (defun bloomon-decrypt ()
        (interactive)
@@ -113,36 +122,32 @@
      (defun bloomon-encrypt ()
        (interactive)
        (let ((root (projectile-project-root)))
-	 (delete-file (concat root "secrets/.keep"))
-	 (delete-directory (concat root "secrets/.mypy_cache") t))
+         (delete-file (concat root "secrets/.keep"))
+         (delete-directory (concat root "secrets/.mypy_cache") t))
        (bloomon-encrypt-decrypt " encrypt "))
 
      (defun msg-me (process event)
-	(princ
-	  (format "Process: %s had the event '%s'" process event)))
-
-     (defun _bloomon-branch-prompt (action)
-       )
+       (princ
+        (format "Process: %s had the event '%s'" process event)))
 
      (defun _bloomon-diff (branch)
        (let* ((process-connection-type t)
-	      (buff-name "*bloomon diff*")
-	      (diff-proc nil))
-	 (with-output-to-temp-buffer buff-name
-	   (setq diff-proc
-		 (start-process "diff" buff-name (bloomon-cli-path) "diff" branch))
-	   (switch-to-buffer-other-window buff-name)
-	   (set-process-sentinel diff-proc 'msg-me)
-	   (special-mode)
-	   (diff-mode)
-	   )))
+              (buff-name "*bloomon diff*")
+              (diff-proc nil))
+         (with-output-to-temp-buffer buff-name
+           (setq diff-proc
+                 (start-process "diff" buff-name (bloomon-cli-path) "diff" branch))
+           (switch-to-buffer-other-window buff-name)
+           (set-process-sentinel diff-proc 'msg-me)
+           (special-mode)
+           (diff-mode))))
 
      (defun bloomon-diff ()
        (interactive)
        (helm :sources
-	     (helm-make-source "Branches" 'helm-source-sync
-	       :candidates (magit-list-branch-names)
-	       :action '_bloomon-diff)))
+             (helm-make-source "Branches" 'helm-source-sync
+               :candidates (magit-list-branch-names)
+               :action '_bloomon-diff)))
    #+end_src
 ** Load init.el
    #+begin_src emacs-lisp :lexical no
@@ -172,84 +177,72 @@
 * Org Mode
 
   #+begin_src emacs-lisp
-        ;; setup HEAVILY inspired by
-        ;; https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
+    ;; setup HEAVILY inspired by
+    ;; https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
 
 
-        (setq org-agenda-files '("~/.org-jira/SHOP.org"
-                                 "~/gtd/inbox.org"
-                                 "~/gtd/gtd.org"
-                                 "~/gtd/tickler.org"
-                                 "~/gtd/schedule.org"))
+    (setq org-agenda-files '("~/gtd/inbox.org"))
 
-        (setq org-refile-targets '(("~/gtd/gtd.org" :maxlevel . 3)
-                                   ("~/gtd/someday.org" :level . 1)
-                                   ("~/gtd/tickler.org" :maxlevel . 2)))
+    (setq org-refile-targets '(("~/gtd/inbox.org" :maxlevel . 3)))
 
-        (setq org-capture-templates '(("t" "Todo [inbox]" entry
-                                       (file+headline "~/gtd/inbox.org" "Tasks")
-                                       "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n")
-                                      ("T" "Tickler" entry
-                                       (file+headline "~/gtd/tickler.org" "Tickler")
-                                       "* %i%? \n %U")
-                                      ("N" "Note [notes]" entry
-                                       (file+headline "~/gtd/notes.org" "Notes")
-                                       "* NOTE %i%?")))
+    (setq org-capture-templates '(("t" "Todo [inbox]" entry
+                                   (file+headline "~/gtd/inbox.org" "Tasks")
+                                   "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n")))
 
-        (setq org-todo-keywords '((sequence "TODO(t)" "WAITING(w)" "IN_PROGRESS(i)" "|" "DONE(d)" "CANCELLED(c)")))
+    (setq org-todo-keywords '((sequence "TODO(t)" "WAITING(w)" "IN_PROGRESS(i)" "|" "DONE(d)" "CANCELLED(c)")))
 
-        (defun my-org-agenda-skip-all-siblings-but-first ()
-          "Skip all but the first non-done entry."
-          (let (should-skip-entry)
-            (unless (org-current-is-todo)
-              (setq should-skip-entry t))
-            (save-excursion
-              (while (and (not should-skip-entry) (org-goto-sibling t))
-                (when (org-current-is-todo)
-                  (setq should-skip-entry t))))
-            (when should-skip-entry
-              (or (outline-next-heading)
-                  (goto-char (point-max))))))
+    (defun my-org-agenda-skip-all-siblings-but-first ()
+      "Skip all but the first non-done entry."
+      (let (should-skip-entry)
+        (unless (org-current-is-todo)
+          (setq should-skip-entry t))
+        (save-excursion
+          (while (and (not should-skip-entry) (org-goto-sibling t))
+            (when (org-current-is-todo)
+              (setq should-skip-entry t))))
+        (when should-skip-entry
+          (or (outline-next-heading)
+              (goto-char (point-max))))))
 
-        (defun org-current-is-todo ()
-          (string= "TODO" (org-get-todo-state)))
+    (defun org-current-is-todo ()
+      (string= "TODO" (org-get-todo-state)))
 
-        (setq org-agenda-custom-commands
-              '(("p" "Personal" tags-todo "@personal"
-                 ((org-agenda-overriding-header "Personal")))
-                ("b" "Bloomon" tags-todo "@bloomon"
-                 ((org-agenda-overriding-header "Bloomon")))))
+    (setq org-agenda-custom-commands
+          '(("p" "Personal" tags-todo "@personal"
+             ((org-agenda-overriding-header "Personal")))
+            ("b" "Bloomon" tags-todo "@bloomon"
+             ((org-agenda-overriding-header "Bloomon")))))
 
-        ;; save org clocks to disk and allow them to be fetched on next
-        ;; startup
-        (setq org-clock-persist 'history)
-        (org-clock-persistence-insinuate)
+    ;; save org clocks to disk and allow them to be fetched on next
+    ;; startup
+    (setq org-clock-persist 'history)
+    (org-clock-persistence-insinuate)
 
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        ;; org-mode agenda options                                                ;;
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        ;;open agenda in current window
-        (setq org-agenda-window-setup (quote current-window))
-        ;;warn me of any deadlines in next 7 days
-        (setq org-deadline-warning-days 7)
-        ;;show me tasks scheduled or due in next fortnight
-        (setq org-agenda-span (quote fortnight))
-        ;;don't show tasks as scheduled if they are already shown as a deadline
-        (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
-        ;;don't give awarning colour to tasks with impending deadlines
-        ;;if they are scheduled to be done
-        (setq org-agenda-skip-deadline-prewarning-if-scheduled (quote pre-scheduled))
-        ;;don't show tasks that are scheduled or have deadlines in the
-        ;;normal todo list
-        (setq org-agenda-todo-ignore-deadlines (quote all))
-        (setq org-agenda-todo-ignore-scheduled (quote all))
-        ;;sort tasks in order of when they are due and then by priority
-        (setq org-agenda-sorting-strategy
-          (quote
-           ((agenda deadline-up priority-down)
-            (todo priority-down category-keep)
-            (tags priority-down category-keep)
-            (search category-keep))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; org-mode agenda options                                                ;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;open agenda in current window
+    (setq org-agenda-window-setup (quote current-window))
+    ;;warn me of any deadlines in next 7 days
+    (setq org-deadline-warning-days 7)
+    ;;show me tasks scheduled or due in next fortnight
+    (setq org-agenda-span (quote fortnight))
+    ;;don't show tasks as scheduled if they are already shown as a deadline
+    (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+    ;;don't give awarning colour to tasks with impending deadlines
+    ;;if they are scheduled to be done
+    (setq org-agenda-skip-deadline-prewarning-if-scheduled (quote pre-scheduled))
+    ;;don't show tasks that are scheduled or have deadlines in the
+    ;;normal todo list
+    (setq org-agenda-todo-ignore-deadlines (quote all))
+    (setq org-agenda-todo-ignore-scheduled (quote all))
+    ;;sort tasks in order of when they are due and then by priority
+    (setq org-agenda-sorting-strategy
+      (quote
+       ((agenda deadline-up priority-down)
+        (todo priority-down category-keep)
+        (tags priority-down category-keep)
+        (search category-keep))))
   #+end_src
 
   Integrate Org with projectile for capturing todos and managing project state
@@ -280,23 +273,6 @@
                            (company-mode +1)))))
   #+end_src
 
-  Add support for syncing Jira to an org file
-
-  #+begin_src emacs-lisp :lexical no
-    (use-package org-jira
-      :ensure t
-      :init
-      (unless (file-exists-p "~/.org-jira")
-        (make-directory "~/.org-jira"))
-      :config
-      (setq org-jira-jira-status-to-org-keyword-alist
-       '(("In Progress" . "IN_PROGRESS")
-         ("Selected for Development" . "TODO")
-         ("Ready for deployment" . "WAITING")
-         ("DONE" . "Done")))
-      (setq jiralib-url "https://bloomon.atlassian.net"))
-  #+end_src
-
   Spruce up how org mode looks with custom bullet icons
 
   #+begin_src emacs-lisp :lexical no
@@ -305,8 +281,7 @@
             :config
             (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
             :init
-            (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-            (add-hook 'org-jira-mode-hook (lambda () (org-superstar-mode 1))))
+            (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
   #+end_src
 
   Org exporters
@@ -319,16 +294,16 @@
 **  Theme
   #+begin_src emacs-lisp
       (use-package doom-themes
-        :ensure
-        :init
-        (load-theme 'doom-peacock t)
-        :config
-        (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-              doom-themes-enable-italic nil
-              doom-neotree-line-spacing 0) ; if nil, italics is universally disabled
-        (doom-themes-neotree-config)
-        (doom-themes-org-config)
-        (doom-themes-visual-bell-config))
+	:ensure
+	:init
+	(load-theme 'doom-Iosvkem t)
+	:config
+	(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+	      doom-themes-enable-italic nil
+	      doom-neotree-line-spacing 0) ; if nil, italics is universally disabled
+	(doom-themes-neotree-config)
+	(doom-themes-org-config)
+	(doom-themes-visual-bell-config))
 
 
       ;; (use-package doom-modeline
@@ -336,19 +311,18 @@
       ;;   :init (doom-modeline-mode 1))
 
       (use-package doom-modeline
-        :ensure
-        :init
-        ;; show doom-modeline at the same time with dashboard
-        (add-hook 'emacs-startup-hook 'doom-modeline-mode -100)
-        :custom
-        (doom-modeline-buffer-encoding nil)
-        (doom-modeline-vcs-max-length 40)
-        (doom-modeline-bar-width 1)
-        (doom-modeline-env-python-executable "python")
-        :hook
-        (dashboard-after-initialize . column-number-mode)
-        :init
-        (doom-modeline-mode 1))
+	:ensure
+	:init
+	;; show doom-modeline at the same time with dashboard
+	(add-hook 'emacs-startup-hook 'doom-modeline-mode -100)
+	:custom
+	(doom-modeline-buffer-encoding nil)
+	(doom-modeline-vcs-max-length 40)
+	(doom-modeline-bar-width 1)
+	(doom-modeline-env-python-executable "python")
+	(doom-modeline-mode 1)
+	:hook
+	(dashboard-after-initialize . column-number-mode))
   #+end_src
 **  Ensure icons work correctly
   #+begin_src emacs-lisp
@@ -412,36 +386,41 @@ p
 
 ** defaults
   #+begin_src emacs-lisp
-    (setq create-lockfiles nil			; disable lockfilesq
+    (setq create-lockfiles nil			; disable lockfiles
 	  make-backup-files nil			; disable backup files
 	  cursor-in-non-selected-windows nil	; Hide the cursor in inactive windows
 	  indent-tabs-mode nil			; disable tab indent
 	  tab-width 2				; tab is 2 spaces
-	  truncate-lines t			; disable line wrap
 	  scroll-conservatively 500		; Avoid recentering when scrolling far
 	  x-stretch-cursor t			; when on a tab stretch the cursor to fit the tab
-	  scroll-margin 2)			; Add a margin when scrolling vertically
+	  scroll-margin 2 			; Add a margin when scrolling vertically
+	  use-dialog-box nil
+	  custom-file (locate-user-emacs-file "custom-vars.el")
+	  )
 
+    (load custom-file 'noerror 'nomessage)
+    (setq-default truncate-lines t)
     (setq-default cursor-type 'bar)
     (recentf-mode)				; enable recent files
     (global-eldoc-mode -1)			; disable eldoc because it sucks
-    (global-auto-revert-mode t)                 ; auto reload files when changed on disk
-    (show-paren-mode t)				;highlight parenthesis
+    (global-auto-revert-mode 1)                 ; auto reload files when changed on disk
+    (show-paren-mode t)				; highlight parenthesis
     (electric-indent-mode)			; indent on RET
     (fset 'yes-or-no-p 'y-or-n-p)		; change yes/no to y/n
     (menu-bar-mode -1)				; no menu bar
-    (toggle-scroll-bar -1)			; no scroll bar
+    (scroll-bar-mode -1)                        ; no scroll bar
     (tool-bar-mode -1)				; no tool bar
     (delete-selection-mode 1)			; when pasting over region, delete it
 
+
   #+end_src
 
-p** Garbage collect on focus out
+** Garbage collect on focus out
    #+begin_src emacs-lisp :lexical no
      (add-function :after after-focus-change-function
-                   (defun me/garbage-collect-maybe ()
-                     (unless (frame-focus-state)
-                       (garbage-collect))))
+		   (defun me/garbage-collect-maybe ()
+		     (unless (frame-focus-state)
+		       (garbage-collect))))
    #+end_src
 ** disable macos fullscreen
   #+begin_src emacs-lisp
@@ -468,10 +447,10 @@ p** Garbage collect on focus out
    #+end_src
 ** load $PATH from shell
    #+begin_src emacs-lisp
-	(use-package exec-path-from-shell
-	  :ensure
-	  :init
-	  (exec-path-from-shell-initialize))
+      (use-package exec-path-from-shell
+        :ensure
+        :init
+        (exec-path-from-shell-initialize))
    #+end_src
 
 ** Set the default directory
@@ -633,6 +612,26 @@ p** Garbage collect on focus out
     (add-hook 'org-src-mode-hook 'flyspell-mode)
   #+end_src
 
+* Remote Editing
+  #+begin_src emacs-lisp :lexical no
+    (require 'tramp)
+    (setq tramp-verbose 10)
+    (setq tramp-debug-buffer t)
+    (setq tramp-default-method "ssh")
+    (setq tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*")
+
+    (use-package helm-tramp
+      :ensure t
+      :bind (("C-c s" . 'helm-tramp))
+      :config
+      (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+      (add-hook 'helm-tramp-pre-command-hook '(lambda ()
+						(projectile-mode 0)))
+      (add-hook 'helm-tramp-quit-hook '(lambda ()
+					 (projectile-mode 1)))
+      )
+
+  #+end_src
 * Autocomplete
   #+begin_src emacs-lisp
     (use-package company
@@ -675,14 +674,14 @@ p** Garbage collect on focus out
 * Navigation
 ** Navigation between windows (Ace window)
    #+begin_src emacs-lisp
-     (use-package ace-window
-               :ensure
-               :bind( ("C-x o" . ace-window))
-               :config
-               (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+          (use-package ace-window
+            :ensure
+            :bind (("M-o" . ace-window))
+            :config
+            (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
-     (use-package winum
-       :ensure)
+          (use-package winum
+            :ensure)
    #+end_src
 ** Text Selection (expand region)
    #+begin_src emacs-lisp
@@ -706,28 +705,47 @@ p** Garbage collect on focus out
        :ensure
        :demand t ;stop lazy loading which breaks projectile
        :bind( ("M-x" . helm-M-x)
-	      ("C-x C-f" . helm-find-files)
-	      ("C-x C-b" . helm-buffers-list)
-	      ("C-x b" . helm-buffers-list))
+              ("C-x C-f" . helm-find-files)
+              ("C-x C-b" . helm-buffers-list)
+              ("C-x b" . helm-buffers-list))
        :config
        (require 'helm-config)
        (require 'helm-for-files)
        (setq helm-input-idle-delay                     0.01
-	     helm-split-window-inside-p                t
-	     helm-commands-using-frame                 '(completion-at-point
-							 helm-apropos
-							 helm-eshell-prompts helm-imenu
-							 helm-imenu-in-all-buffers)
-	     helm-show-action-window-other-window      'left
-	     ;;helm-move-to-line-cycle-in-source         t
-	     helm-autoresize-max-height                80 ; it is %.
-	     helm-autoresize-min-height                20 ; it is %.
-	     helm-follow-mode-persistent               t
-	     helm-candidate-number-limit               500
-	     helm-visible-mark-prefix                  "✓")
+             helm-split-window-inside-p                t
+             helm-commands-using-frame                 '(completion-at-point
+                                                         helm-apropos
+                                                         helm-eshell-prompts helm-imenu
+                                                         helm-imenu-in-all-buffers)
+             helm-show-action-window-other-window      'left
+             ;;helm-move-to-line-cycle-in-source         t
+             helm-autoresize-max-height                80 ; it is %.
+             helm-autoresize-min-height                20 ; it is %.
+             helm-follow-mode-persistent               t
+             helm-candidate-number-limit               500
+             helm-visible-mark-prefix                  "✓"
+             helm-scroll-amount                        4
+             helm-execute-persistent-action            "<tab>"
+             helm-echo-input-in-header-line            t)
        (helm-mode 1))
    #+end_src
 
+   Since we use minibuffer as input, lets hide other thing
+   #+begin_src emacs-lisp
+     (defun maki/helm-hide-minibuffer-maybe ()
+       "Hide minibuffer in Helm session if we use the header line as input field."
+       (when (with-helm-buffer helm-echo-input-in-header-line)
+         (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+           (overlay-put ov 'window (selected-window))
+           (overlay-put ov 'face
+                        (let ((bg-color (face-background 'default nil)))
+                          `(:background ,bg-color :foreground ,bg-color)))
+           (setq-local cursor-type nil))))
+
+
+     (add-hook 'helm-minibuffer-set-up-hook
+               'maki/helm-hide-minibuffer-maybe)
+   #+end_src
    As we also use silver searcher, enable silver searcher searching
 
    #+begin_src emacs-lisp
@@ -739,16 +757,13 @@ p** Garbage collect on focus out
          (custom-set-variables
           ;; '(helm-follow-mode-persistent t)
           '(helm-ag-base-command "ag --vimgrep")
-          '(helm-scroll-amount 4)
-          '(helm-ag-use-temp-buffer t)
-          '(helm-execute-persistent-action "<tab>"))
+          '(helm-ag-use-temp-buffer t))
          ;; ensure helm window always opens at bottom of frame
           (add-to-list 'display-buffer-alist
                        `(,(rx bos "*helm" (* not-newline) "*" eos)
                          (display-buffer-in-side-window)
                          (inhibit-same-window . t)
-                         (window-height . 0.4)))
-          ))
+                         (window-height . 0.4)))))
    #+end_src
 
    Similarly, enable the helm mini bufffer for projectile interactions
@@ -794,13 +809,16 @@ p** Garbage collect on focus out
        (add-to-list 'display-buffer-alist
                     '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                       nil
-                      (window-parameters (mode-line-format . none)))))
+                      (window-parameters (mode-line-format . none))))
+       )
 
      (use-package avy
        :ensure
        :config
        (setq avy-background t)
        :bind (("C-:" . avy-goto-line)
+              ("C-j" . avy-goto-char)
+              :map org-mode-map
               ("C-j" . avy-goto-char)))
 
 
@@ -849,6 +867,18 @@ p** Garbage collect on focus out
        )
 
    #+end_src
+* Shell
+  #+begin_src emacs-lisp
+    (use-package shell-pop
+        :ensure
+        :bind (("C-`". shell-pop))
+        :config
+        (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*" (lambda nil (ansi-term shell-pop-term-shell)))))
+        (setq shell-pop-term-shell "/bin/zsh")
+        (setq shell-pop-autocd-to-working-dir nil)
+        ;; need to do this manually or not picked up by `shell-pop'
+        (shell-pop--set-shell-type 'shell-pop-shell-type shell-pop-shell-type))
+  #+end_src
 * Programming Languages
 ** C Sharp
    #+begin_src emacs-lisp
@@ -987,24 +1017,10 @@ p** Garbage collect on focus out
    Configure the language server for python
 
    #+begin_src emacs-lisp :lexical no
-     (defun pdm-get-packages-path (&optional dir)
-       (let ((pdm-get-packages-cmd "pdm run bash -c 'printenv PEP582_PACKAGES'"))
-	 (concat (string-trim
-		  (shell-command-to-string
-		   (if dir
-		       (concat "cd "
-			       dir
-			       " && "
-			       pdm-get-packages-cmd)
-		     pdm-get-packages-cmd)))
-		 "/lib")))
-
-      (with-eval-after-load "lsp-mode"
-	(lsp-register-custom-settings '(("pylsp.plugins.pyls_mypy.enabled" t t)
-					("pylsp.plugins.pyls_mypy.live_mode" nil t)
-					("pylsp.plugins.pyls_mypy.enabled" t t)
-					("pylsp.plugins.pyls_mypy.live_mode" nil t)))
-	(setq lsp-pylsp-plugins-pycodestyle-enabled nil))
+     (with-eval-after-load "lsp-mode"
+       (lsp-register-custom-settings '(("pylsp.plugins.pyls_mypy.enabled" t t)
+				       ("pylsp.plugins.pyls_mypy.live_mode" nil t)))
+       (setq lsp-pylsp-plugins-pycodestyle-enabled nil))
    #+end_src
 * Keybindings
 
@@ -1192,7 +1208,6 @@ p** Garbage collect on focus out
      (global-set-key (kbd "TAB") #'company-indent-or-complete-common)
      (global-set-key (kbd "M-m") 'hydra-main/body)
      (global-set-key (kbd "M-RET") 'hydra-lsp/body)
-     (global-set-key (kbd "M-o")  'other-window)
      (global-set-key (kbd "C-;")  'comment-line)
      ;; keybindings
      (global-set-key (kbd "C-c c") 'org-capture)
