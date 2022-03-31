@@ -50,3 +50,14 @@ recentf
 todo
 transient
 url
+.cache/
+.lsp-eslint-choices
+.lsp-session-v1
+custom-vars.el
+forge-database.sqlite
+lsp-cache/
+org-clock-save.el
+projectile-bookmarks.eld
+request/
+templates/
+elpy/
