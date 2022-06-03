@@ -1,6 +1,7 @@
 (use-package doom-themes
   :config
-  (load-theme 'doom-Iosvkem t)
+  ;;(load-theme 'doom-Iosvkem t)
+  (load-theme 'dracula)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic nil)
   (doom-themes-neotree-config)
@@ -23,19 +24,18 @@
 ;; Make sure icons work properly
 (use-package all-the-icons)
 
-
 (use-package rainbow-delimiters
   :hook
   (prog-mode . rainbow-delimiters-mode))
 
 ;; highlight todo keywords in buffers
 (use-package hl-todo
-  :init
+  :config
   (global-hl-todo-mode))
 
 ;; highlight git diffs in buffer gutters
 (use-package diff-hl
-  :init (global-diff-hl-mode))
+  :config (global-diff-hl-mode))
 
 ;; enable fill column line
 (setq-default fill-column 88)
@@ -49,7 +49,7 @@
 (use-package dashboard
   :config
   (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
-  (setq dashboard-filter-agenda-entry 'dashboard-filter-agenda-by-todo)
+  ;; (setq dashboard-filter-agenda-entry 'dashboard-filter-agenda-by-todo)
   (setq dashboard-center-content t)
   (setq dashboard-startup-banner 2)
   (setq dashboard-set-heading-icons t)

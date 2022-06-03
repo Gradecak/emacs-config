@@ -13,7 +13,7 @@ kills the shell window once the process ends with a 0 status code"
   (term-sentinel proc msg)
   (when (and (memq (process-status proc) '(signal exit))
 	     (eq (process-exit-status proc) 0))
-    (kill-buffer-and-window)))
+    (kill-buffer (process-buffer proc))))
 
 
 (defun python-shell (&optional switch-focus-p file)

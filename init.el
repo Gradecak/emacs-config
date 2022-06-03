@@ -67,7 +67,6 @@
 (use-package elfeed
   :ensure
   :config
-
   (setq elfeed-search-filter "@2-days-ago +unread"
 	elfeed-feeds '(
 		       ("https://www.dutchnews.nl/rss" dutchnews)

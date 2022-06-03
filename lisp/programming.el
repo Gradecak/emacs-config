@@ -6,23 +6,29 @@
   :config
   (setq hungry-delete-join-reluctantly t)
   (global-hungry-delete-mode 1)
-  (c-toggle-hungry-state))
+  :bind (("<backspace>" . hungry-delete-backward)
+	 ("C-d" . hungry-delete-forward)))
 
 (use-package csharp-mode)
 
 (use-package yaml-mode
-  :init
+  :config
   (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
   :hook
   (yaml-mode-hook . (lambda ()
 		      (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
 
 (use-package json-mode
-  :init
-  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode)))
+  :config
+  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
+  (add-hook 'json-mode-hook
+          (lambda ()
+            (make-local-variable 'js-indent-level)
+            (setq js-indent-level 2))))
+
 
 (use-package dockerfile-mode
-  :init
+  :config
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 
 (use-package markdown-mode
@@ -30,27 +36,28 @@
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . markdown-mode)
 	 ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown"))
+  :config
+  (setq markdown-command "multimarkdown"))
 
 (use-package go-mode
   :after lsp
   :hook
   (go-mode . lsp-deferred)
-  :config
+  :init
   (setq lsp-gopls-staticcheck t
 	lsp-eldoc-render-all t
 	lsp-gopls-complete-unimported t))
-
 
 (use-package haskell-mode
   :hook
   (haskell-mode . lsp-deferred))
 
-(use-package lsp-haskell)
-
+(use-package lsp-haskell
+  :config
+  (setq lsp-haskell-formatting-provider "stylish-haskell"))
 
 (use-package rjsx-mode
-  :init
+  :config
   (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
   (setq js-indent-level 2)
   :hook
@@ -59,7 +66,7 @@
 (use-package js2-refactor
   :hook
   (rjsq-mode-hook . js2-refactor-mode)
-  :init
+  :config
   (setq js2-basic-offset 2))
 
 (use-package web-mode
@@ -73,15 +80,14 @@
   (web-mode . lsp-deferred))
 
 (use-package typescript-mode
-  :init
+  :config
   (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
   (setq typescript-indent-level 2)
   :hook
   (typescript-mode . lsp-deferred))
 
-
 (use-package php-mode
-  :init
+  :config
   (add-to-list 'auto-mode-alist '("\\.php\\'" . php-mode))
   :hook (php-mode . lsp-deferred))
 
@@ -97,11 +103,12 @@
   :hook (python-mode . lsp-deferred)
   :bind
   (:map python-mode-map
-	("C-c C-p" . 'python-better-shell)))
+	("C-c C-p" . 'python-better-shell)
+	("C-c t" . 'pytest-runner)))
 
 (use-package python-better-shell
   :ensure nil
-  :load-path "./")
+  :load-path "./lisp/")
 
 
 (use-package pyvenv
@@ -112,8 +119,8 @@
 
 (with-eval-after-load "lsp-mode"
   (lsp-register-custom-settings '(("pylsp.plugins.pycodestyle.enabled" nil t)
-				  ("pylsp.plugins.pyls_mypy.enabled" t t)
-				  ("pylsp.plugins.pyls_mypy.live_mode" nil t))))
+				  ("pylsp.plugins.pylsp_mypy.enabled" t t)
+				  ("pylsp.plugins.pylsp_mypy.live_mode" nil t))))
 
 (defun auto-pyvenv ()
   (interactive)
@@ -124,6 +131,9 @@
     (if (file-directory-p venv-path)
 	(pyvenv-activate venv-path)
       (message "no venv for project"))))
+
+(use-package docker
+  :bind ("C-c d" . docker))
 
 
 (provide 'programming)

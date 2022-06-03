@@ -67,12 +67,11 @@
 (use-package undo-tree
   :ensure
   :config
-  (setq undo-tree-enable-undo-in-region nil
+  (setq undo-tree-enable-undo-in-region t
 	undo-tree-auto-save-history t
-	undo-tree-visualizer-diff t
+	undo-tree-visualizer-diff nil
 	undo-tree-history-directory-alist
 	`((".*" . ,(concat user-emacs-directory "undo-history"))))
-  :init
   (global-undo-tree-mode))
 
 
@@ -82,72 +81,24 @@
 ;; project management
 (use-package projectile
   :ensure t
-  :after helm
   :config
-  (setq projectile-completion-system 'helm
-	projectile-auto-discover nil
+  (setq projectile-auto-discover nil
 	projectile-switch-project-action 'projectile-find-file
         projectile-enable-caching t) ; Enable caching, otherwise find-file is slow
   (add-to-list 'projectile-ignored-projects `,(concat (getenv "HOME") "/"))
   (projectile-mode 1))
 
-(use-package shell-pop
-  :ensure
-  :bind (("C-`". shell-pop))
-  :config
-  (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*" (lambda nil (ansi-term shell-pop-term-shell))))
-	shell-pop-term-shell "/bin/zsh"
-	shell-pop-autocd-to-working-dir nil)
-  ;; need to do this manually or not picked up by `shell-pop'
-  (shell-pop--set-shell-type 'shell-pop-shell-type shell-pop-shell-type))
-
 (use-package treemacs
   :ensure t
   :after projectile
-  :defer t
+  :bind (("M-0" . treemacs-display-current-project-exclusively))
   :config
-  (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
-	treemacs-deferred-git-apply-delay      0.5
-	treemacs-directory-name-transformer    #'identity
-	treemacs-display-in-side-window        t
-	treemacs-file-event-delay              5000
-	treemacs-file-extension-regex          treemacs-last-period-regex-value
-	treemacs-file-follow-delay             0.2
-	treemacs-file-name-transformer         #'identity
-	treemacs-follow-after-init             t
-	treemacs-git-command-pipe              ""
-	treemacs-goto-tag-strategy             'refetch-index
-	treemacs-indentation                   2
-	treemacs-indentation-string            " "
-	treemacs-is-never-other-window         nil
-	treemacs-max-git-entries               5000
-	treemacs-missing-project-action        'ask
-	treemacs-no-png-images                 nil
-	treemacs-no-delete-other-windows       t
-	treemacs-project-follow-cleanup        nil
-	treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-	treemacs-position                      'left
-	treemacs-recenter-distance             0.1
-	treemacs-recenter-after-file-follow    nil
-	treemacs-recenter-after-tag-follow     nil
-	treemacs-recenter-after-project-jump   'always
-	treemacs-recenter-after-project-expand 'on-distance
-	treemacs-show-cursor                   nil
-	treemacs-show-hidden-files             t
-	treemacs-silent-filewatch              nil
-	treemacs-silent-refresh                nil
-	treemacs-sorting                       'alphabetic-asc
-	treemacs-space-between-root-nodes      t
-	treemacs-tag-follow-cleanup            t
-	treemacs-tag-follow-delay              1.5
-	treemacs-width                         35
-	treemacs-find-workspace-method         'find-for-file-or-pick-first)
-  ;; The default width and height of the icons is 22 pixels. If you are
-  ;; using a Hi-DPI display, uncomment this to double the icon size.
-  ;; (treemacs-resize-icons 44)
+  (treemacs-resize-icons 22)
+  (treemacs-project-follow-mode t)
   (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-fringe-indicator-mode t))
+  (treemacs-git-mode 'deferred)
+  (treemacs-project-follow-mode t)
+  )
 
 ;; make treemacs be aware of projects
 (use-package treemacs-projectile
@@ -162,16 +113,14 @@
 ;; pop buffer to help discover what keybindings do
 (use-package which-key
   :ensure
-  :init
-  (which-key-mode)
-  (which-key-setup-side-window-bottom)
-  (which-key-setup-minibuffer)
   :config
   (setq which-key-idle-delay 0.5
-	which-key-idle-secondary-delay 0.05))
+	which-key-idle-secondary-delay 0.05)
+  (which-key-mode)
+  (which-key-setup-side-window-bottom)
+  (which-key-setup-minibuffer))
 
 
-;; the best git client
 (use-package magit
   :custom
   (magit-section-initial-visibility-alist '((stashes . show)
@@ -180,7 +129,7 @@
 					    (issues . show))))
 
 (use-package magit-todos
-  :init (magit-todos-mode))
+  :config (magit-todos-mode))
 
 ;; a nice way to select symbols
 (use-package expand-region
@@ -198,19 +147,32 @@
   :ensure nil
   :config
   (setq tramp-verbose 10
-	tramp-debug-buffer t
-	tramp-default-method "ssh"
 	tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
 
-(use-package helm-tramp
-  :after helm
-  :bind (("C-c s" . 'helm-tramp))
+(use-package vterm
   :config
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
-  (add-hook 'helm-tramp-pre-command-hook '(lambda ()
-					    (projectile-mode 0)))
-  (add-hook 'helm-tramp-quit-hook '(lambda ()
-				     (projectile-mode 1)))
-  )
+  (setq vterm-max-scrollback 10000
+	vterm-timer-delay 0
+        vterm-buffer-name-string "%s"))
+
+(use-package multi-vterm
+  :ensure t
+  :bind (("C-c m" . multi-vterm)
+	 ("C-c n" . multi-vterm-next)
+	 ("C-c p" . multi-vterm-previous)
+	 ("C-c b" . multi-vterm-helm)))
+
+(defun multi-vterm-helm ()
+  "Switch between vterm buffers using helm."
+  (interactive)
+  (helm :sources
+        (helm-build-sync-source "vterm"
+          :candidates (if (boundp 'multi-vterm-buffer-list)
+                          (mapcar #'buffer-name multi-vterm-buffer-list)
+                        '())
+          :action '(("Switch to term" . switch-to-buffer)
+                    ("Kill term" . (lambda (candidate)
+                                     (mapc 'kill-buffer (helm-marked-candidates))))))))
+
 
 (provide 'user-init)
