@@ -110,17 +110,6 @@
   :after (treemacs magit)
   :ensure t)
 
-;; pop buffer to help discover what keybindings do
-(use-package which-key
-  :ensure
-  :config
-  (setq which-key-idle-delay 0.5
-	which-key-idle-secondary-delay 0.05)
-  (which-key-mode)
-  (which-key-setup-side-window-bottom)
-  (which-key-setup-minibuffer))
-
-
 (use-package magit
   :custom
   (magit-section-initial-visibility-alist '((stashes . show)
@@ -157,22 +146,19 @@
 
 (use-package multi-vterm
   :ensure t
-  :bind (("C-c m" . multi-vterm)
-	 ("C-c n" . multi-vterm-next)
-	 ("C-c p" . multi-vterm-previous)
-	 ("C-c b" . multi-vterm-helm)))
-
-(defun multi-vterm-helm ()
-  "Switch between vterm buffers using helm."
-  (interactive)
-  (helm :sources
-        (helm-build-sync-source "vterm"
-          :candidates (if (boundp 'multi-vterm-buffer-list)
-                          (mapcar #'buffer-name multi-vterm-buffer-list)
-                        '())
-          :action '(("Switch to term" . switch-to-buffer)
-                    ("Kill term" . (lambda (candidate)
-                                     (mapc 'kill-buffer (helm-marked-candidates))))))))
-
+  :after (consult)
+  :bind (("C-c m" . multi-vterm))
+  :config
+  (defvar consult--source-terminal
+    `(:name "Terminal"
+	    :narrow (?t . "Terminal")
+	    :enabled (lambda () (and (boundp 'multi-vterm-buffer-list)
+                                     (not (null multi-vterm-buffer-list))))
+	    :category buffer
+	    :state ,#'consult--buffer-preview
+	    :action   ,#'consult--buffer-action
+	    :items (lambda () (mapcar #'buffer-name multi-vterm-buffer-list)))
+    "Terminal candidate for `consult-buffer'.")
+  (add-to-list 'consult-buffer-sources 'consult--source-terminal 'append))
 
 (provide 'user-init)

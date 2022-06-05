@@ -1,10 +1,10 @@
 (use-package doom-themes
   :config
   ;;(load-theme 'doom-Iosvkem t)
-  (load-theme 'dracula)
+  ;; (load-theme 'dracula)
+  (load-theme 'doom-tomorrow-night t)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic nil)
-  (doom-themes-neotree-config)
   (doom-themes-org-config)
   (doom-themes-visual-bell-config))
 

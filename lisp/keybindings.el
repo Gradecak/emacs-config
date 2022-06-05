@@ -3,12 +3,12 @@
 
 (transient-define-prefix transient-projectile ()
   [["Find"
-    ("f" "file" helm-projectile-find-file)
-    ("o" "open project" helm-projectile-switch-project)]
+    ("f" "file" (message "use <>"))
+    ("o" "open project" (message "use <>"))]
    ["Search/Tags"
-    ("s" "search project" helm-projectile-rg)]
+    ("s" "search project" (lambda () (interactive) (message "Use M-s r")))]
    ["Buffers"
-    ("b" "switch project buffer" helm-projectile-switch-to-buffer)
+    ("b" "switch project buffer" (message "use <>"))
     ("K" "kill all buffers" projectile-kill-buffers)
     ("X" "Cleanup Deleted" projectile-cleanup-known-projects)]])
 
@@ -33,9 +33,7 @@
 (transient-define-prefix transient-main ()
   [["General"
     ("<tab>" "last buffer" (lambda () (interactive) (switch-to-buffer nil)))
-    ("*" "helm ag" helm-ag)
-    ("ss" "serach buffer" helm-occur)
-    ("ry" "ring yank" helm-show-kill-ring)]
+    ("ry" "ring yank" (lambda () (interactive) (message "use M-y")))]
 
    ["Buffers (b)"
     ("bk" "kill buffer" kill-buffer)
@@ -56,7 +54,7 @@
     ("gs" "git" magit-status)]
 
    ["Errors (e)"
-    ("el" "list errors" helm-flycheck)]
+    ("el" "list errors" consult-flycheck)]
 
    ["Comment (c)"
     ("cl" "comment line" comment-line)]

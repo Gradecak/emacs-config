@@ -4,7 +4,7 @@
 
 (require  'projectile)
 (require 'magit)
-(require 'helm)
+(require 'consult)
 
 ;;; Code:
 
@@ -81,7 +81,7 @@ buffer, otherwise quit window."
     ;; try find existing window that has a bloomon-process running
     (if-let ((window (bloomon-existing-process-window)))
 	(window--display-buffer *buffer* window 'window)
-	(switch-to-buffer-other-window *buffer*))))
+      (switch-to-buffer-other-window *buffer*))))
 
 (defun bloomon-regexp-candidates (content regexp)
   (save-match-data
@@ -102,19 +102,18 @@ buffer, otherwise quit window."
   "Use regexp matching to extract secrets environments from the project root."
   (let ((files (directory-files (projectile-project-root))))
     (remq nil (mapcar (lambda (file)
-		 (save-match-data
-		   (string-match "secrets.\\(.*\\).enc" file)
-		   (match-string 1 file)))
-	       files))))
+			(save-match-data
+			  (string-match "secrets.\\(.*\\).enc" file)
+			  (match-string 1 file)))
+		      files))))
 
 ;; -----------------------------
 ;; Project Running
 ;; -----------------------------
 (defun bloomon-prompt-project (action)
-  (helm :sources
-        (helm-build-sync-source "Bloomon Project"
-          :candidates (bloomon-project-candidates)
-          :action action)))
+  (funcall action (consult--read
+		   (bloomon-project-candidates)
+		   :prompt "Bloomon Project: ")))
 
 (defun bloomon-project-candidates ()
   "Get all of the project names which contain a docker-compose.yaml file in root."
@@ -149,70 +148,56 @@ buffer, otherwise quit window."
      "^[[:space:]]+\\(.*\\)")))
 
 (defun bloomon-prompt-bin/cli-action (action)
-  (helm :sources
-        (helm-build-sync-source "Bin/Cli Action"
-          :candidates (bloomon-bincli-candidates (projectile-project-root))
-          :action action)))
+  (funcall action (consult--read
+		   (bloomon-bincli-candidates (projectile-project-root))
+		   :prompt "Bin/Cli Action: ")))
 
-(defun bloomon-project-bin/cli ()
-  (interactive)
-  (bloomon-prompt-bin/cli-action
-   (lambda (action)
-     (bloomon-run-process-with-focus
-      (concat "docker-compose run --rm app bin/cli " action)
-      (bloomon-buffer-name action)))))
+  (defun bloomon-project-bin/cli ()
+    (interactive)
+    (bloomon-prompt-bin/cli-action
+     (lambda (action)
+       (bloomon-run-process-with-focus
+	(concat "docker-compose run --rm app bin/cli " action)
+	(bloomon-buffer-name action)))))
 
-;; -----------------------------
-;; Bloomon cli wrapper
-;; -----------------------------
+  ;; -----------------------------
+  ;; Bloomon cli wrapper
+  ;; -----------------------------
 
-(defun bloomon-prompt-cli-action (action)
-  (helm :sources
-	(helm-build-sync-source "Bloomon Cli"
-	  :candidates (bloomon-regexp-candidates
-		       (shell-command-to-string bloomon-cli-cmd)
-		       "^\s+\\(\\w\\{2,\\}\\)")
-	  :action action)))
-
-(defun bloomon-diff ()
-  "Diff bloomon project secrets."
-  (interactive)
-  (helm :sources
-	(helm-make-source "Branches" 'helm-source-sync
-	  :candidates (magit-list-branch-names)
-	  :action (lambda (branch)
-		    (let* ((buff-name (bloomon-buffer-name "diff"))
-			   (default-directory (projectile-project-root))
-			   (*buffer* (bloomon-exec-process
-				      (concat "bloomon diff " branch) buff-name)))
-		      (switch-to-buffer-other-window *buffer*))))))
+  (defun bloomon-diff ()
+    (interactive)
+    (let* ((branch (consult--read (magit-list-branch-names)))
+	   (buff-name (bloomon-buffer-name "diff"))
+	   (default-directory (projectile-project-root))
+	   (*buffer* (bloomon-exec-process
+		      (concat "bloomon diff " branch) buff-name)))
+      (switch-to-buffer-other-window *buffer*)))
 
 
-(defun bloomon-env-action (action)
-  (helm :sources
-	(helm-build-sync-source "Secrets Env"
-	  :candidates (bloomon-env-candidates)
-	  :action action)))
+  (defun bloomon-env-action (action)
+    (funcall action (consult--read
+		     (bloomon-env-candidates)
+		     :prompt "Secrets Env")))
 
-(defun bloomon-decrypt ()
-  (interactive)
-  (bloomon-env-action
-   (lambda (env)
-     (message
-      (string-join
-       (seq-filter
-	(lambda (s) (message s) (string-prefix-p "?rw" s))
-	(split-string (shell-command-to-string (concat "bloomon decrypt " env)) "\n"))
-       "\n")))))
+  (defun bloomon-decrypt ()
+    (interactive)
+    (bloomon-env-action
+     (lambda (env)
+       (message
+	(string-join
+	 (seq-filter
+	  (lambda (s) (message s) (string-prefix-p "?rw" s))
+	  (split-string (shell-command-to-string (concat "bloomon decrypt " env)) "\n"))
+	 "\n")))))
 
-(defun bloomon-encrypt ()
-  (interactive)
-  (bloomon-env-action
-   (lambda (env)
-     (delete-directory
-      (concat (projectile-project-root) "secrets/.mypy_cache") t)
-     (shell-command-to-string (concat "bloomon encrypt " env))
-     (message "Encrypt Done"))))
+  (defun bloomon-encrypt ()
+    (interactive)
+    (bloomon-env-action
+     (lambda (env)
+       (delete-directory
+	(concat (projectile-project-root) "secrets/.mypy_cache") t)
+       (shell-command-to-string (concat "bloomon encrypt " env))
+       (message "Encrypt Done"))))
 
-(provide 'bloomon)
+  (provide 'bloomon)
 ;;; bloomon.el ends here
