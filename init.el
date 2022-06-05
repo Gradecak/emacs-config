@@ -17,58 +17,20 @@
   (require 'bind-key)
   (setq use-package-always-ensure t))
 
-(use-package user-init
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package custom-functions
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package bloomon
-  :ensure nil
-  :load-path "./lisp/")
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/"))
+(mapc #'require '(user-init
+                  custom-functions
+                  bloomon
+                  appearance
+                  programming
+                  completion
+                  org-custom
+                  navigation
+                  language-server
+                  keybindings))
 
 (use-package pytest
   :ensure nil
   :load-path "~/Documents/emacs-pytest/")
 
-(use-package appearance
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package programming
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package completion
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package org-custom
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package navigation
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package language-server
-  :after completion
-  :ensure nil
-  :load-path "./lisp/")
-
-(use-package keybindings
-  :after (:all user-init programming custom-functions navigation completion)
-  :ensure nil
-  :load-path "./lisp/")
-
-
-(use-package elfeed
-  :ensure
-  :config
-  (setq elfeed-search-filter "@2-days-ago +unread"
-	elfeed-feeds '(
-		       ("https://www.dutchnews.nl/rss" dutchnews)
-		       ("https://nltimes.nl/rss" nltimes)
-		       ("https://www.reddit.com/r/emacs.rss" emacs-reddit))))
+(provide 'init)
