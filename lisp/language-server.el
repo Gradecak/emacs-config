@@ -1,66 +1,67 @@
-;; For reasons beyond my understanding, this variable must be bound
-(defcustom lsp-pylsp-plugins-jedi-extra-paths []
-  "Argument passed to jedi"
-  :risky t
-  :type 'lsp-string-vector
-  :group 'lsp-pylsp)
-
-(use-package lsp-mode
-  :after company
+(use-package eglot
   :config
-  (lsp-register-custom-settings '(("pylsp.plugins.jedi.extra_paths" lsp-pylsp-plugins-jedi-extra-paths)))
-  (setq lsp-log-io nil
-	lsp-enable-folding nil
-	lsp-enable-snippet nil
-	lsp-restart 'auto-restart
-	lsp-keymap-prefix "M-RET"
-	lsp-auto-guess-root t
-	lsp-eldoc-enable-hover nil
-	lsp-completion-enable t
-	lsp-enable-indentation nil
-	lsp-before-save-edits nil
-	lsp-signature-render-documentation nil
-	lsp-disabled-clients '(lsp-pyls)
-	lsp-eldoc-hook nil)
-  :commands lsp lsp-deferred)
+  (add-to-list 'eglot-server-programs '(web-mode . ("typescript-language-server" "--stdio"))))
 
-(use-package lsp-treemacs
-  :commands lsp-treemacs-errors-list
+(defvar-local +lsp--flycheck-eglot--current-errors nil)
+
+(defun +lsp--flycheck-eglot-init (checker callback)
+  "CHECKER is the checker (eglot).
+CALLBACK is the function that we need to call when we are done, on all the errors."
+  (eglot-flymake-backend #'+lsp--flycheck-eglot--on-diagnostics)
+  (funcall callback 'finished +lsp--flycheck-eglot--current-errors))
+
+(defun +lsp--flycheck-eglot--on-diagnostics (diags &rest _)
+  (cl-labels
+      ((flymake-diag->flycheck-err
+         (diag)
+         (with-current-buffer (flymake--diag-buffer diag)
+           (flycheck-error-new-at-pos
+            (flymake--diag-beg diag)
+            (pcase (flymake--diag-type diag)
+              ('eglot-note 'info)
+              ('eglot-warning 'warning)
+              ('eglot-error 'error)
+              (_ (error "Unknown diagnostic type, %S" diag)))
+            (flymake--diag-text diag)
+            :end-pos (flymake--diag-end diag)
+            :checker 'eglot
+            :buffer (current-buffer)
+            :filename (buffer-file-name)))))
+    (setq +lsp--flycheck-eglot--current-errors
+          (mapcar #'flymake-diag->flycheck-err diags))
+    ;; Call Flycheck to update the diagnostics annotations
+    (flycheck-buffer-deferred)))
+
+(defun +lsp--flycheck-eglot-available-p ()
+  (bound-and-true-p eglot--managed-mode))
+
+(flycheck-define-generic-checker 'eglot
+  "Report `eglot' diagnostics using `flycheck'."
+  :start #'+lsp--flycheck-eglot-init
+  :predicate #'+lsp--flycheck-eglot-available-p
+  :modes '(prog-mode text-mode))
+
+(push 'eglot flycheck-checkers)
+
+(add-hook 'eglot-managed-mode-hook
+	  (defun +lsp-eglot-prefer-flycheck-h ()
+	    (when eglot--managed-mode
+	      (flymake-mode -1)
+	      (when-let ((current-checker (flycheck-get-checker-for-buffer)))
+		(unless (equal current-checker 'eglot)
+		  (flycheck-add-next-checker 'eglot current-checker)))
+	      (flycheck-add-mode 'eglot major-mode)
+	      (flycheck-mode 1)
+	      ;; Call flycheck on initilization to make sure to display initial
+	      ;; errors
+	      (flycheck-buffer-deferred))))
+
+(use-package flymake
   :config
-  (setq
-   lsp-treemacs-errors-position-params '((side . right))))
+  (when (and
+	 (not (fboundp 'flymake--diag-buffer))
+	 (fboundp 'flymake--diag-locus))
+    (defalias 'flymake--diag-buffer 'flymake--diag-locus)))
 
-(use-package lsp-ui
-  :commands lsp-ui-mode
-  :config
-  (setq lsp-ui-doc-enable t
-	lsp-ui-peek-enable t
-	lsp-lens-enable nil
-	lsp-ui-doc-include-signature t
-	lsp-headerline-breadcrumb-enable nil
-	lsp-modeline-code-actions-enable nil
-	lsp-eldoc-enable-hover nil
-	lsp-signature-render-documentation nil
-	lsp-signature-auto-activate nil
-	lsp-ui-sideline-enable nil
-	lsp-ui-peek-list-width 60
-	lsp-ui-peek-peek-height 25))
-
-(defun lsp-format-and-save ()
-  (interactive)
-  (lsp-format-buffer)
-  (save-buffer))
-
-(with-eval-after-load "projectile"
-  (defun discover-pip-local-packages ()
-    "For projects that have a local .pip directory where deps are
-installed, load them as jedi to enable completion."
-    (let ((pip-dir (car (file-expand-wildcards (expand-file-name ".pip/lib/*" (projectile-project-root))))))
-      (when pip-dir
-	(setenv "PYTHONPATH" (expand-file-name "site-packages/" pip-dir))
-	(setq lsp-pylsp-plugins-jedi-extra-paths
-	      (vector (format "%S" (expand-file-name "site-packages/" pip-dir)))))))
-
-  (add-hook 'projectile-after-switch-project-hook 'discover-pip-local-packages t))
 
 (provide 'language-server)
