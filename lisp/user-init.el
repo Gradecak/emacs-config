@@ -1,3 +1,5 @@
+(require 'use-package)
+
 (setq create-lockfiles nil			; disable lockfiles
       make-backup-files nil			; disable backup files
       cursor-in-non-selected-windows nil	; Hide the cursor in inactive windows
@@ -57,15 +59,12 @@
 ;; delete trailing whitespaces on save
 (add-hook 'before-save-hook (lambda () (delete-trailing-whitespace)))
 
-
 ;; load $PATH from the shell environment
 (use-package exec-path-from-shell
-  :ensure
   :init
   (exec-path-from-shell-initialize))
 
 (use-package undo-tree
-  :ensure
   :config
   (setq undo-tree-enable-undo-in-region t
 	undo-tree-auto-save-history t
@@ -80,7 +79,6 @@
 
 ;; project management
 (use-package projectile
-  :ensure t
   :config
   (setq projectile-auto-discover nil
 	projectile-switch-project-action 'projectile-find-file
@@ -89,7 +87,6 @@
   (projectile-mode 1))
 
 (use-package treemacs
-  :ensure t
   :after projectile
   :bind (("M-0" . treemacs-display-current-project-exclusively))
   :config
@@ -97,18 +94,15 @@
   (treemacs-project-follow-mode t)
   (treemacs-follow-mode t)
   (treemacs-git-mode 'deferred)
-  (treemacs-project-follow-mode t)
-  )
+  (treemacs-project-follow-mode t))
 
 ;; make treemacs be aware of projects
 (use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
+  :after (treemacs projectile))
 
 ;; show git file status in treemacs
 (use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+  :after (treemacs magit))
 
 (use-package magit
   :custom
@@ -116,7 +110,6 @@
 					    (unpushed . show)
 					    (pullreqs . show)
 					    (issues . show))))
-
 (use-package magit-todos
   :config (magit-todos-mode))
 
@@ -133,7 +126,7 @@
   (global-set-key (kbd "C-s-n") #'drag-stuff-down))
 
 (use-package tramp
-  :ensure nil
+  :straight (:type built-in)
   :config
   (setq tramp-verbose 10
 	tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
@@ -145,8 +138,7 @@
         vterm-buffer-name-string "%s"))
 
 (use-package multi-vterm
-  :ensure t
-  :after (consult)
+  :after consult
   :bind (("C-c m" . multi-vterm))
   :config
   (defvar consult--source-terminal

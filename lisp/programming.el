@@ -1,10 +1,11 @@
+(require 'use-package)
+
 (use-package smartparens
-  :hook
-  (prog-mode . smartparens-mode))
+  :hook (prog-mode . smartparens-mode)
+  :config (require 'smartparens-config))
 
 (use-package hungry-delete
-  :config
-  (setq hungry-delete-join-reluctantly t)
+  :config (setq hungry-delete-join-reluctantly t)
   (global-hungry-delete-mode 1)
   :bind (("<backspace>" . hungry-delete-backward)
 	 ("C-d" . hungry-delete-forward)))
@@ -107,7 +108,7 @@
 	("C-c t" . 'pytest-runner)))
 
 (use-package python-better-shell
-  :ensure nil
+  :straight nil
   :load-path "./lisp/")
 
 

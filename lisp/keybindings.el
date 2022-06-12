@@ -63,18 +63,13 @@
     ("tf" "fullscreen" toggle-frame-fullscreen)
     ("tr" "reload config" load-init-el)]])
 
-;; (with-eval-after-load "lsp-mode"
-;;   (define-key lsp-mode-map (kbd "M-RET") 'transient-lsp))
+(use-package emacs
+  :straight (:type built-in)
+  :bind (("M-m" . transient-main)
+	 ("C-;" . comment-line)
+	 ("C-c <tab>" . (lambda () (interactive) (switch-to-buffer nil)))
+	 ("C-c c" . org-capture)
+	 ("C-c a" . org-agenda)))
 
-;; (global-set-key (kbd "<tab>") #'company-indent-or-complete-common)
-;; (global-set-key (kbd "TAB") 'company-indent-or-complete-common)
-(global-set-key (kbd "M-m") 'transient-main)
-(global-set-key (kbd "M-RET") 'transient-lsp)
-(global-set-key (kbd "C-;")  'comment-line)
-(global-set-key (kbd "C-c <tab>") (lambda () (interactive) (switch-to-buffer nil)))
-;; keybindings
-(global-set-key (kbd "C-c c") 'org-capture)
-(global-set-key (kbd "C-c a") 'org-agenda)
-;; (global-set-key (kbd "M-0") 'treemacs-display-current-project-exclusively)
 
 (provide 'keybindings)

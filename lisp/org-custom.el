@@ -29,6 +29,7 @@
           (goto-char (point-max))))))
 
 (use-package org
+  :straight (:type built-in)
   :config
   (setq org-agenda-files (file-expand-wildcards (org-file "*.org"))
 	org-capture-templates `(("t" "Todo" entry
