@@ -1,39 +1,17 @@
-(use-package transient )
+(require 'transient)
+(require 'use-package)
 
+;;; Code:
 
 (transient-define-prefix transient-projectile ()
-  [["Find"
-    ("f" "file" (message "use <>"))
-    ("o" "open project" (message "use <>"))]
-   ["Search/Tags"
-    ("s" "search project" (lambda () (interactive) (message "Use M-s r")))]
-   ["Buffers"
-    ("b" "switch project buffer" (message "use <>"))
+  [["Buffers"
     ("K" "kill all buffers" projectile-kill-buffers)
     ("X" "Cleanup Deleted" projectile-cleanup-known-projects)]])
 
-(transient-define-prefix transient-lsp ()
-  [["Buffer"
-    ("f" "format" lsp-format-and-save)
-    ("m" "menu" lsp-ui-imenu)]
-   ["Server"
-    ("M-r" "restart server" lsp-workspace-restart)
-    ("S" "shutdown server" lsp-workspace-shutdown)
-    ("M-s" "session info" lsp-describe-session)]
-   ["Symbol"
-    ("d" "declaration" lsp-find-declaration)
-    ("D" "definition" lsp-ui-peek-find-definitions)
-    ("R" "reference" lsp-ui-peek-find-references)
-    ("i" "implementation" lsp-ui-peek-find-implementation)
-    ("t" "type" lsp-find-type-definition)
-    ("r" "rename" lsp-rename)
-    ("o" "documentation" lsp-describe-thing-at-point)]
-   ])
-
 (transient-define-prefix transient-main ()
   [["General"
-    ("<tab>" "last buffer" (lambda () (interactive) (switch-to-buffer nil)))
-    ("ry" "ring yank" (lambda () (interactive) (message "use M-y")))]
+    ("ar" "align regexp" align-regexp)
+    ("<tab>" "last buffer" (lambda () (interactive) (switch-to-buffer nil)))]
 
    ["Buffers (b)"
     ("bk" "kill buffer" kill-buffer)
@@ -49,9 +27,6 @@
 
    ["Project (p)"
     ("p" "project" transient-projectile)]
-
-   ["Git (g)"
-    ("gs" "git" magit-status)]
 
    ["Errors (e)"
     ("el" "list errors" consult-flycheck)]

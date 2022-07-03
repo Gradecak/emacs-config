@@ -1,6 +1,7 @@
 (require 'org-capture)
 (require 'org-clock)
 (require 'org-agenda)
+(require 'use-package)
 
 
 (defcustom org-home-dir "~/Documents/org/"
@@ -30,6 +31,8 @@
 
 (use-package org
   :straight (:type built-in)
+  :hook ((org-babel-after-execute . org-redisplay-inline-images)
+	 (org-mode . org-indent-mode))
   :config
   (setq org-agenda-files (file-expand-wildcards (org-file "*.org"))
 	org-capture-templates `(("t" "Todo" entry
@@ -58,7 +61,13 @@
 	org-tag-alist '(("@bloomon" . ?b)
 			("@personal" . ?p)))
   ;; save org clocks to disk and allow them to be fetched on next startup
-  (org-clock-persistence-insinuate))
+  (org-clock-persistence-insinuate)
+  (setq org-confirm-babel-evaluate nil
+	org-plantuml-jar-path "~/plantuml.jar")
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((shell . t)
+			       (sql . t)
+			       (plantuml . t))))
 
 (use-package org-bullets
   :init

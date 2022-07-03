@@ -147,7 +147,11 @@
   (yas-global-mode))
 
 (use-package flycheck
-  :config (global-flycheck-mode)
+  :init
+  (setq flycheck-disabled-checkers '(python-flake8 python-mypy))
+  :config
+  (global-flycheck-mode)
+  ;; we rely on the language servers for these checks
   :custom
   (flycheck-display-errors-delay 0))
 
