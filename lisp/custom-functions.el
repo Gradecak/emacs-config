@@ -1,3 +1,11 @@
+(defun kill-all-buffers ()
+  "Kill all buffers and reset view to dashboard"
+  (interactive)
+  (mapc (lambda (buff)
+	  (when (not (equal "*dashboard*" (buffer-name buff)))
+	    (kill-buffer buff)))
+	(buffer-list)))
+
 (defun delete-file-and-buffer ()
   "Kill the current buffer and deletes the file it is visiting."
   (interactive)
