@@ -5,23 +5,21 @@
     :config
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
-(use-package winum)
-
 (use-package embark
     :bind (("C-." . embark-act))         ;; pick some comfortable binding
-  :init
-  ;; Optionally replace the key help with a completing-read interface
-  (setq embark-quit-after-action nil
-	prefix-help-command #'embark-prefix-help-command
-	embark-indicators '(embark-minimal-indicator
-			    embark-highlight-indicator
-			    embark-isearch-highlight-indicator))
+    :init
+    ;; Optionally replace the key help with a completing-read interface
+    (setq embark-quit-after-action nil
+	  prefix-help-command #'embark-prefix-help-command
+	  embark-indicators '(embark-minimal-indicator
+			      embark-highlight-indicator
+			      embark-isearch-highlight-indicator))
 
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-	       '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-		 nil
-		 (window-parameters (mode-line-format . none)))))
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+		 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+		   nil
+		   (window-parameters (mode-line-format . none)))))
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult

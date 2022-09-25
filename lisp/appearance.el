@@ -2,26 +2,9 @@
 
 ;;;; Code:
 
-(use-package emacs
-  :straight (:type built-in)
-  :config
-  ;; (load-theme 'modus-operandi)
-  (load-theme 'modus-vivendi)
-  :init
-  (setq modus-themes-org-blocks 'gray-background
-	modus-themes-fringes nil
-	modus-themes-italic-constructs t
-	modus-themes-bold-constructs t
-	modus-themes-diffs '(desaturated)
-	modus-themes-syntax '(alt-syntax)
-	modus-themes-hl-line '(intense)
-	modus-themes-paren-match '(intense bold underline)
-	modus-themes-mode-line '(moody borderless))
-  (setq modus-themes-headings
-        (quote ((1 . (rainbow variable-pitch 1.2))
-                (2 . (variable-pitch 1.2))
-		(3 . (variable-pitch 1.1))
-		(t . (monochrome))))))
+(use-package zenburn-theme
+    :config
+  (load-theme 'zenburn))
 
 (use-package doom-modeline
   :init

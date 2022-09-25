@@ -8,6 +8,24 @@
     ("K" "kill all buffers" projectile-kill-buffers)
     ("X" "Cleanup Deleted" projectile-cleanup-known-projects)]])
 
+;; (transient-define-prefix transient-lsp ()
+;;   [["Buffer"
+;;     ("f" "format" lsp-format-and-save)
+;;     ("m" "menu" lsp-ui-imenu)]
+;;    ["Server"
+;;     ("M-r" "restart server" lsp-workspace-restart)
+;;     ("S" "shutdown server" lsp-workspace-shutdown)
+;;     ("M-s" "session info" lsp-describe-session)]
+;;    ["Symbol"
+;;     ("d" "declaration" lsp-find-declaration)
+;;     ("D" "definition" lsp-ui-peek-find-definitions)
+;;     ("R" "reference" lsp-ui-peek-find-references)
+;;     ("i" "implementation" lsp-ui-peek-find-implementation)
+;;     ("t" "type" lsp-find-type-definition)
+;;     ("r" "rename" lsp-rename)
+;;     ("o" "documentation" lsp-describe-thing-at-point)]
+;;    ])
+
 (transient-define-prefix transient-main ()
   [["General"
     ("ar" "align regexp" align-regexp)
@@ -29,7 +47,7 @@
     ("p" "project" transient-projectile)]
 
    ["Errors (e)"
-    ("el" "list errors" consult-flycheck)]
+    ("el" "list errors" consult-flymake)]
 
    ["Comment (c)"
     ("cl" "comment line" comment-line)]
@@ -40,7 +58,8 @@
 
 (use-package emacs
   :straight (:type built-in)
-  :bind (("M-m" . transient-main)
+  :bind (("M-RET" . transient-main)
+	 ;; ("C-<return>" . transient-lsp)
 	 ("C-;" . comment-line)
 	 ("C-c <tab>" . (lambda () (interactive) (switch-to-buffer nil)))
 	 ("C-c c" . org-capture)
