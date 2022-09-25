@@ -137,7 +137,6 @@
     :diminish company-mode
     :init
     (add-hook 'after-init-hook 'global-company-mode)
-    ;; (global-set-key (kbd "TAB") #'company-indent-or-complete-common)
     :config
     (setq company-tooltip-align-annotations t
 	  company-idle-delay 0
@@ -147,7 +146,7 @@
     :bind (:map company-active-map
 	   ("C-n" . company-select-next-or-abort)
 	   ("C-p" . company-select-previous-or-abort)
-	   ("TAB" . company-complete-common-or-cycle)
+	   ("<tab>" . company-complete-selection)
 	   :map company-search-map
 	   ("C-p" . company-select-previous)
 	   ("C-n" . company-select-next)))
