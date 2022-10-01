@@ -1,36 +1,53 @@
 (require 'use-package)
 
 (use-package ace-window
-    :bind (("M-o" . ace-window))
-    :config
-    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+  :bind (("M-o" . ace-window))
+  :config
+  (defun aw-kill-buffer (window)
+    (interactive)
+    (kill-buffer (window-buffer window)))
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-dispatch-alist
+	'((?x aw-delete-window "Delete Window")
+	  (?m aw-swap-window "Swap Windows")
+	  (?M aw-move-window "Move Window")
+	  (?r aw-kill-buffer "Delete buffer")
+	  (?c aw-copy-window "Copy Window")
+	  (?j aw-switch-buffer-in-window "Select Buffer")
+	  (?n aw-flip-window)
+	  (?u aw-switch-buffer-other-window "Switch Buffer Other Window")
+	  (?c aw-split-window-fair "Split Fair Window")
+	  (?v aw-split-window-vert "Split Vert Window")
+	  (?b aw-split-window-horz "Split Horz Window")
+	  (?o delete-other-windows "Delete Other Windows")
+	  (?? aw-show-dispatch-help))))
 
 (use-package embark
-    :bind (("C-." . embark-act))         ;; pick some comfortable binding
-    :init
-    ;; Optionally replace the key help with a completing-read interface
-    (setq embark-quit-after-action nil
-	  prefix-help-command #'embark-prefix-help-command
-	  embark-indicators '(embark-minimal-indicator
-			      embark-highlight-indicator
-			      embark-isearch-highlight-indicator))
+  :bind (("C-." . embark-act))         ;; pick some comfortable binding
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq embark-quit-after-action nil
+	prefix-help-command #'embark-prefix-help-command
+	embark-indicators '(embark-minimal-indicator
+			    embark-highlight-indicator
+			    embark-isearch-highlight-indicator))
 
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-		 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-		   nil
-		   (window-parameters (mode-line-format . none)))))
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+	       '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+		 nil
+		 (window-parameters (mode-line-format . none)))))
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
-    :after (embark consult)
-    :demand t ; only necessary if you have the hook below
-    ;; if you want to have consult previews as you move around an
-    ;; auto-updating embark collect buffer
-    :hook '((embark-collect-mode . consult-preview-at-point-mode)))
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook '((embark-collect-mode . consult-preview-at-point-mode)))
 
 (use-package avy
-    :config
+  :config
   (setq avy-background t)
   (defun avy-action-copy-whole-line (pt)
     (save-excursion
@@ -58,9 +75,9 @@
 
   (defun avy-action-embark (pt)
     (unwind-protect
-	 (save-excursion
-	   (goto-char pt)
-	   (embark-act))
+	(save-excursion
+	  (goto-char pt)
+	  (embark-act))
       (select-window
        (cdr (ring-ref avy-ring 0))))
     t)

@@ -1,5 +1,6 @@
-(require 'projectile)
+(require 'project)
 (require 'term)
+(require 'custom-functions)
 
 (defcustom python-better-shell-command "docker-compose run --rm app bin/cli shell"
   "Shell command to execute for python-better-shell."
@@ -17,11 +18,11 @@ kills the shell window once the process ends with a 0 status code"
 
 
 (defun python-shell (&optional switch-focus-p file)
-  (let* ((default-directory (projectile-project-root))
+  (let* ((default-directory (project-root (project-current)))
 	 (args (split-string-and-unquote python-better-shell-command))
 	 (cmd (car args))
          (switches (cdr args))
-	 (process-name (format "%s-shell" (projectile-project-name)))
+	 (process-name (format "%s-shell" (project-name)))
          (shellbuf (apply 'make-term process-name cmd file switches)))
     (setq python-better-shell-buffer shellbuf)
     (with-current-buffer shellbuf

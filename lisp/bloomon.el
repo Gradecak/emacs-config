@@ -2,9 +2,10 @@
 
 ;;; Commentary:
 
-(require  'projectile)
+(require  'project)
 (require 'magit)
 (require 'consult)
+(require 'custom-functions)
 
 ;;; Code:
 
@@ -52,7 +53,7 @@ buffer, otherwise quit window."
 				     (with-current-buffer (process-buffer proc)
 				       (let ((inhibit-read-only t))
 					 (erase-buffer)))
-				     (bloomon-run-process-with-focus "docker-compose up app" (projectile-project-name)))))
+				     (bloomon-run-process-with-focus "docker-compose up app" (project-root (project-current))))))
       (interrupt-process proc))))
 
 (defun split-window-horizontal (window)
@@ -94,13 +95,14 @@ buffer, otherwise quit window."
 
 (defun bloomon-buffer-name (&optional action)
   "Create a buffer name for a PROJECT.  If ACTION is specified it will be included in name."
-  (if action
-      (format "*%s-%s*" (projectile-project-name) action)
-    (format "*%s*" (projectile-project-name))))
+  (let (project-name (project-name))
+    (if action
+	(format "*%s-%s*" project-name action)
+      (format "*%s*" project-name))))
 
 (defun bloomon-env-candidates ()
   "Use regexp matching to extract secrets environments from the project root."
-  (let ((files (directory-files (projectile-project-root))))
+  (let ((files (directory-files (project-root (project-current)))))
     (remq nil (mapcar (lambda (file)
 			(save-match-data
 			  (string-match "secrets.\\(.*\\).enc" file)
@@ -119,7 +121,7 @@ buffer, otherwise quit window."
   "Get all of the project names which contain a docker-compose.yaml file in root."
   (seq-filter
    (lambda (path) (directory-files path nil "docker-compose.yaml"))
-   projectile-known-projects))
+   (project-known-project-roots)))
 
 (defun bloomon-run-project ()
   (interactive)
@@ -128,12 +130,12 @@ buffer, otherwise quit window."
      (let ((default-directory project))
        (bloomon-run-process-with-focus
 	"docker-compose up app"
-	(projectile-project-name))))))
+	(project-name))))))
 
 (defun bloomon-run-current-project ()
   (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (bloomon-run-process-with-focus "docker-compose up app" (projectile-project-name))))
+  (let ((default-directory (project-root (project-current))))
+    (bloomon-run-process-with-focus "docker-compose up app" (project-name))))
 
 ;; -----------------------------
 ;; Bin/Cli wrapper
@@ -149,55 +151,55 @@ buffer, otherwise quit window."
 
 (defun bloomon-prompt-bin/cli-action (action)
   (funcall action (consult--read
-		   (bloomon-bincli-candidates (projectile-project-root))
+		   (bloomon-bincli-candidates (project-root (project-current)))
 		   :prompt "Bin/Cli Action: ")))
 
-  (defun bloomon-project-bin/cli ()
-    (interactive)
-    (bloomon-prompt-bin/cli-action
-     (lambda (action)
-       (bloomon-run-process-with-focus
-	(concat "docker-compose run --rm app bin/cli " action)
-	(bloomon-buffer-name action)))))
+(defun bloomon-project-bin/cli ()
+  (interactive)
+  (bloomon-prompt-bin/cli-action
+   (lambda (action)
+     (bloomon-run-process-with-focus
+      (concat "docker-compose run --rm app bin/cli " action)
+      (bloomon-buffer-name action)))))
 
-  ;; -----------------------------
-  ;; Bloomon cli wrapper
-  ;; -----------------------------
+;; -----------------------------
+;; Bloomon cli wrapper
+;; -----------------------------
 
-  (defun bloomon-diff ()
-    (interactive)
-    (let* ((branch (consult--read (magit-list-branch-names)))
-	   (buff-name (bloomon-buffer-name "diff"))
-	   (default-directory (projectile-project-root))
-	   (*buffer* (bloomon-exec-process
-		      (concat "bloomon diff " branch) buff-name)))
-      (switch-to-buffer-other-window *buffer*)))
+(defun bloomon-diff ()
+  (interactive)
+  (let* ((branch (consult--read (magit-list-branch-names)))
+	 (buff-name (bloomon-buffer-name "diff"))
+	 (default-directory (project-root (project-current)))
+	 (*buffer* (bloomon-exec-process
+		    (concat "bloomon diff " branch) buff-name)))
+    (switch-to-buffer-other-window *buffer*)))
 
 
-  (defun bloomon-env-action (action)
-    (funcall action (consult--read
-		     (bloomon-env-candidates)
-		     :prompt "Secrets Env")))
+(defun bloomon-env-action (action)
+  (funcall action (consult--read
+		   (bloomon-env-candidates)
+		   :prompt "Secrets Env")))
 
-  (defun bloomon-decrypt ()
-    (interactive)
-    (bloomon-env-action
-     (lambda (env)
-       (message
-	(string-join
-	 (seq-filter
-	  (lambda (s) (message s) (string-prefix-p "?rw" s))
-	  (split-string (shell-command-to-string (concat "bloomon decrypt " env)) "\n"))
-	 "\n")))))
+(defun bloomon-decrypt ()
+  (interactive)
+  (bloomon-env-action
+   (lambda (env)
+     (message
+      (string-join
+       (seq-filter
+	(lambda (s) (message s) (string-prefix-p "?rw" s))
+	(split-string (shell-command-to-string (concat "bloomon decrypt " env)) "\n"))
+       "\n")))))
 
-  (defun bloomon-encrypt ()
-    (interactive)
-    (bloomon-env-action
-     (lambda (env)
-       (delete-directory
-	(concat (projectile-project-root) "secrets/.mypy_cache") t)
-       (shell-command-to-string (concat "bloomon encrypt " env))
-       (message "Encrypt Done"))))
+(defun bloomon-encrypt ()
+  (interactive)
+  (bloomon-env-action
+   (lambda (env)
+     (delete-directory
+      (concat (project-root (project-current)) "secrets/.mypy_cache") t)
+     (shell-command-to-string (concat "bloomon encrypt " env))
+     (message "Encrypt Done"))))
 
-  (provide 'bloomon)
+(provide 'bloomon)
 ;;; bloomon.el ends here

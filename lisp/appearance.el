@@ -3,7 +3,7 @@
 ;;;; Code:
 
 (use-package zenburn-theme
-    :config
+  :config
   (load-theme 'zenburn))
 
 (use-package doom-modeline
@@ -46,6 +46,7 @@
   ;; (setq dashboard-filter-agenda-entry 'dashboard-filter-agenda-by-todo)
   (setq dashboard-center-content t
 	dashboard-startup-banner 2
+	dashboard-projects-backend 'project-el
 	dashboard-set-heading-icons t
 	dashboard-set-file-icons t
 	dashboard-items '((agenda . 10) (projects . 7))

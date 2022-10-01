@@ -1,10 +1,4 @@
-(defun kill-all-buffers ()
-  "Kill all buffers and reset view to dashboard"
-  (interactive)
-  (mapc (lambda (buff)
-	  (when (not (equal "*dashboard*" (buffer-name buff)))
-	    (kill-buffer buff)))
-	(buffer-list)))
+(require 'project)
 
 (defun delete-file-and-buffer ()
   "Kill the current buffer and deletes the file it is visiting."
@@ -47,5 +41,8 @@ affects the sort order.  See `sort-regexp-fields'."
 (defun load-init-el ()
   (interactive)
   (load-file user-init-file))
+
+(defun project-name ()
+  (file-name-nondirectory (directory-file-name (file-name-directory (project-root (project-current))))))
 
 (provide 'custom-functions)
