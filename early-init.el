@@ -10,7 +10,7 @@
 ;;disable shitty UI elements
 (setq default-frame-alist
       '((fullscreen . maximized)
-	(font . "FiraCode 12")
+	(font . "Iosevka 13")
         (set-language-environment "UTF-8")
 	(menu-bar-lines . 0)
 	(tool-bar-lines . 0)))
