@@ -31,7 +31,6 @@
                   org-custom
                   navigation
 		  bloomon
-                  language-server
                   keybindings))
 
 (use-package pytest

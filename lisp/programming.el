@@ -1,16 +1,55 @@
 (require 'use-package)
 
+(defun pylsp-config (server)
+  (if (memq 'python-mode (eglot--major-modes (eglot-current-server)))
+    (let* ((project-root (project-root (project-current)))
+	 (pip-dir (expand-file-name ".pip/" project-root))
+	 (lib-dir (car (file-expand-wildcards (expand-file-name "lib/*" pip-dir))))
+	 (jedi-extra-paths []))
+    ;; make sure that when we set the env vars, they are only set for processes
+    ;; spawned from this buffer and _NOT_ globally
+    (make-local-variable 'process-environment)
+    (when lib-dir
+      (setenv "PYTHONPATH" (expand-file-name "site-packages/" lib-dir))
+      (setenv "PATH" (concat (expand-file-name ".pip/bin/" project-root) ":" (getenv "PATH")))
+      (setq jedi-extra-paths (vector (format "%S" (expand-file-name "site-packages/" lib-dir)))))
+    `((pylsp . ((configurationSources . ["flake8"])
+			    (plugins . ((pycodestyle . (enabled :json-false))
+					(pyflakes . (enabled :json-false))
+					(flake8 . (enabled t))
+					(pylsp_mypy . ((enabled . t)
+						       (live-mode . :json-false)))
+					(jedi . (extra_paths ,jedi-extra-paths))))))))
+    `()))
+
 (use-package eglot
+  :init
+  (setq eglot-workspace-configuration #'pylsp-config)
   :bind
   (("C-<return> f" . eglot-format-buffer)
    ("C-<return> S" . eglot-shutdown)
    ("C-<return> r" . eglot-rename))
   :config
-  (setq eglot-autoshutdown t
-	eglot-events-buffer-size 0))
+  (add-to-list 'eglot-server-programs '(rust-mode . ("rustup run nightly rust-analyzer")))
+  (setq eglot-events-buffer-size 0)
+  (add-hook 'eglot-managed-mode-hook
+          (lambda ()
+            ;; Show flymake diagnostics first.
+            (setq eldoc-documentation-functions
+                  (cons #'flymake-eldoc-function
+                        (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+            ;; Show all eldoc feedback.
+            (setq eldoc-documentation-strategy #'eldoc-documentation-compose))))
+
+(use-package rust-mode
+  :mode ("\\.rs\\'" . rust-mode)
+  :hook (rust-mode . eglot-ensure))
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
+  :bind (("M-i" . sp-change-enclosing)
+	 ("C-\\" . sp-change-inner)
+	 ("C-S-k" . sp-kill-sexp))
   :config
   (require 'smartparens-config))
 
@@ -75,43 +114,13 @@
 (use-package php-mode
   :mode ("\\.php\\'" . php-mode))
 
-(defun pylsp-init ()
-  (interactive)
-  (message "running init")
-  (let* ((project-root (project-root (project-current)))
-	 (pip-dir (expand-file-name ".pip/" project-root))
-	 (lib-dir (car (file-expand-wildcards (expand-file-name "lib/*" pip-dir))))
-	 (jedi-extra-paths []))
-    ;; make sure that when we set the env vars, they are only set for processes
-    ;; spawned from this buffer and _NOT_ globally
-    (make-local-variable 'process-environment)
-    (when lib-dir
-      (setenv "PYTHONPATH" (expand-file-name "site-packages/" lib-dir))
-      (setenv "PATH" (concat (expand-file-name ".pip/bin/" project-root) ":" (getenv "PATH")))
-      (setq jedi-extra-paths (vector (format "%S" (expand-file-name "site-packages/" lib-dir)))))
-    (setq-local eglot-workspace-configuration
-		`((pylsp . ((configurationSources . ["flake8"])
-			    (plugins . ((pycodestyle . (enabled :json-false))
-					(pyflakes . (enabled :json-false))
-					(flake8 . (enabled t))
-					(pylsp_mypy . ((enabled . t)
-						       (live-mode . :json-false)))
-					(jedi . (extra_paths ,jedi-extra-paths))))))))
-    (eglot-ensure)
-    ;; for some reason eglot does not pick up the workspace configuration on first load
-    ;; so we signal configuration change after 3 minutes
-    (run-with-timer 3 nil (lambda ()
-			    (message "signaling change")
-			    (eglot-signal-didChangeConfiguration
-			     (eglot--current-server-or-lose))))))
-
 (use-package python
   :straight (:type built-in)
   :config
   (setq-default python-indent-offset 4)
   (setq python-indent-guess-indent-offset-verbose nil)
   :hook
-  (python-mode . pylsp-init)
+  (python-mode . eglot-ensure)
   :bind (:map python-mode-map
 	      ("C-c C-p" . 'python-better-shell)
 	      ("C-c t" . 'pytest-runner)))
