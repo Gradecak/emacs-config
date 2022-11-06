@@ -3,33 +3,36 @@
 (use-package emacs
   :straight (:type built-in)
   :hook ((prog-mode . flymake-mode)
-	 (prog-mode . subword-mode)
+         (prog-mode . subword-mode)
          (text-mode . flymake-mode))
   :init
   (setq create-lockfiles nil               ; disable lockfiles
-	make-backup-files nil              ; disable backup files
-	cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
-	indent-tabs-mode nil               ; disable tab indent
-	tab-width 2                        ; tab is 2 spaces
-	scroll-conservatively 500          ; Avoid recentering when scrolling far
-	x-stretch-cursor t                 ; when on a tab stretch the cursor to fit the tab
-	scroll-margin 15                    ; Add a margin when scrolling verticallyb
-	use-dialog-box nil
-	custom-file (locate-user-emacs-file "custom-vars.el")
-	default-directory (file-name-as-directory (substitute-in-file-name "$HOME/Documents"))
-	switch-to-buffer-obey-display-actions t
+        make-backup-files nil              ; disable backup files
+        cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
+        indent-tabs-mode nil               ; disable tab indent
+        tab-width 2                        ; tab is 2 spaces
+        scroll-conservatively 500          ; Avoid recentering when scrolling far
+        x-stretch-cursor t                 ; when on a tab stretch the cursor to fit the tab
+        scroll-margin 15                    ; Add a margin when scrolling vertically
+        use-dialog-box nil ; don't use dialog boxes to ask questions
+        custom-file (locate-user-emacs-file "custom-vars.el") ; move custom vars out of init.el
+        default-directory (file-name-as-directory (substitute-in-file-name "$HOME/Documents"))
+        switch-to-buffer-obey-display-actions t
 	next-line-add-newlines t
-	shell-command-switch "-ic"
-	auto-revert-use-notify nil)
+        shell-command-switch "-ic"
+        auto-revert-use-notify nil)
+
+  (add-hook 'prog-mode #'(lambda () (setq indent-tabs-mode nil)))
+
   (scroll-bar-mode -1)                     ; no scroll bar
   (menu-bar-mode -1)                       ; no menu bar
   (tool-bar-mode -1)                       ; no tool bar
   (delete-selection-mode 1)                ; when pasting over region, delete it
   (global-hl-line-mode)                    ; highlight current line
-  (blink-cursor-mode -1)                   ; disable cursor
+  (blink-cursor-mode -1)                   ; disable cursor blinking
   (load custom-file 'noerror 'nomessage)
   (setq-default truncate-lines t)
-  (setq-default cursor-type 'bar)
+  (setq-default cursor-type 'box)
   (setq-default eldoc-echo-area-use-multiline-p nil)
   (recentf-mode)                           ; enable recent files
   (global-auto-revert-mode 1)              ; auto reload files when changed on disk
@@ -85,15 +88,32 @@
   (treemacs-git-mode 'deferred))
 
 ;; show git file status in treemacs
-(use-package treemacs-magit
-  :after (treemacs magit))
+;; (use-package treemacs-magit
+;;   :after (treemacs magit))
 
 (use-package magit
+  :after consult
+  :init
+  (defun magit-buffers ()
+    (seq-remove
+     (lambda (r) (not (string-prefix-p "magit:" r)))
+     (mapcar 'buffer-name (buffer-list))))
+  (defvar consult--source-magit
+    `(:name "Magit"
+	    :narrow (?g . "Magit")
+	    :enabled (lambda () (not (eq (magit-buffers) nil)))
+	    :category buffer
+	    :state ,#'consult--buffer-preview
+	    :action  ,#'consult--buffer-action
+	    :items ,#'magit-buffers)
+    "github candicates for `consult-buffer'.")
+  (add-to-list 'consult-buffer-sources 'consult--source-magit 'append)
   :config
   (setq magit-section-initial-visibility-alist '((stashes . show)
 						 (unpushed . show)
 						 (pullreqs . show)
 						 (issues . show))))
+
 (use-package magit-todos
   :config (magit-todos-mode))
 
@@ -116,13 +136,9 @@
 	tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
 
 (use-package vterm
-  :bind (("C-c m" . vterm))
-  :config
-  (setq vterm-max-scrollback 10000
-	vterm-timer-delay 0
-        vterm-buffer-name-string "%s"
-	vterm-kill-buffer-on-exit t)
-  (defun vterm-buffers ()
+  :after consult
+  :init
+    (defun vterm-buffers ()
     "Get the names of all buffers for which vterm is a major mode."
     (mapcar
      #'buffer-name
@@ -138,7 +154,13 @@
 	    :action  ,#'consult--buffer-action
 	    :items ,#'vterm-buffers)
     "Terminal candidate for `consult-buffer'.")
-  (add-to-list 'consult-buffer-sources 'consult--source-terminal 'append))
+  (add-to-list 'consult-buffer-sources 'consult--source-terminal 'append)
+  :bind (("C-c m" . vterm))
+  :config
+  (setq vterm-max-scrollback 10000
+	vterm-timer-delay 0
+        vterm-buffer-name-string "%s"
+	vterm-kill-buffer-on-exit t))
 
 ;; emacs startup profiler
 (use-package esup)

@@ -22,6 +22,9 @@
 					(jedi . (extra_paths ,jedi-extra-paths))))))))
     `()))
 
+
+
+
 (use-package eglot
   :init
   (setq eglot-workspace-configuration #'pylsp-config)
@@ -30,8 +33,9 @@
    ("C-<return> S" . eglot-shutdown)
    ("C-<return> r" . eglot-rename))
   :config
-  (add-to-list 'eglot-server-programs '(rust-mode . ("rustup run nightly rust-analyzer")))
-  (setq eglot-events-buffer-size 0)
+  (add-to-list 'eglot-server-programs '(rust-mode . ("rustup" "run" "nightly" "rust-analyzer")))
+  (setq eglot-events-buffer-size 0
+	eglot-confirm-server-initiated-edits nil)
   (add-hook 'eglot-managed-mode-hook
           (lambda ()
             ;; Show flymake diagnostics first.

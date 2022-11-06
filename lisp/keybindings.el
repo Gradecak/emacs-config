@@ -40,7 +40,6 @@
 (use-package emacs
   :straight (:type built-in)
   :bind (("M-RET" . transient-main)
-	 ;; ("C-<return>" . transient-lsp)
 	 ("C-;" . comment-line)
 	 ("C-c <tab>" . (lambda () (interactive) (switch-to-buffer nil)))
 	 ("C-c c" . org-capture)
