@@ -2,9 +2,9 @@
 
 ;;;; Code:
 
-(use-package zenburn-theme
+(use-package color-theme-sanityinc-tomorrow
   :config
-  (load-theme 'zenburn))
+  (color-theme-sanityinc-tomorrow-night))
 
 (use-package doom-modeline
   :init

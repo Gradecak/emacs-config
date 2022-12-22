@@ -26,6 +26,7 @@
 
 
 (use-package eglot
+  :straight (:type built-in)
   :init
   (setq eglot-workspace-configuration #'pylsp-config)
   :bind
@@ -62,8 +63,6 @@
   (global-hungry-delete-mode 1)
   :bind (("<backspace>" . hungry-delete-backward)
 	 ("C-d" . hungry-delete-forward)))
-
-(use-package csharp-mode)
 
 (use-package yaml-mode
   :mode ("\\.ya?ml\\'" . yaml-mode)

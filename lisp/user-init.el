@@ -20,6 +20,7 @@
         switch-to-buffer-obey-display-actions t
 	next-line-add-newlines t
         shell-command-switch "-ic"
+	native-comp-async-report-warnings-errors nil ;; disable annoying native compilation warning
         auto-revert-use-notify nil)
 
   (add-hook 'prog-mode #'(lambda () (setq indent-tabs-mode nil)))
@@ -67,7 +68,7 @@
 
 ;; load $PATH from the shell environment
 (use-package exec-path-from-shell
-  :init
+  :config
   (exec-path-from-shell-initialize))
 
 (use-package undo-tree

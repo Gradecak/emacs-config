@@ -19,7 +19,6 @@
   (setq package-enable-at-startup nil)
   (straight-use-package 'use-package)
   (straight-use-package 'bind-key)
-
   (setq straight-check-for-modifications '(check-on-save)))
 
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/"))
