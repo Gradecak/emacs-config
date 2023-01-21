@@ -42,7 +42,4 @@ affects the sort order.  See `sort-regexp-fields'."
   (interactive)
   (load-file user-init-file))
 
-(defun mg-project-name ()
-  (file-name-nondirectory (directory-file-name (file-name-directory (project-root (project-current))))))
-
 (provide 'custom-functions)

@@ -23,6 +23,10 @@
 	native-comp-async-report-warnings-errors nil ;; disable annoying native compilation warning
         auto-revert-use-notify nil)
 
+  ;; disable macos native fullscreen
+  (if (eq system-type 'darwin)
+      (setq ns-use-native-fullscreen nil))
+
   (add-hook 'prog-mode #'(lambda () (setq indent-tabs-mode nil)))
 
   (scroll-bar-mode -1)                     ; no scroll bar
@@ -68,8 +72,8 @@
 
 ;; load $PATH from the shell environment
 (use-package exec-path-from-shell
-  :config
-  (exec-path-from-shell-initialize))
+  :init
+  (add-hook 'after-init-hook 'exec-path-from-shell-initialize))
 
 (use-package undo-tree
   :config
@@ -139,7 +143,7 @@
 (use-package vterm
   :after consult
   :init
-    (defun vterm-buffers ()
+  (defun vterm-buffers ()
     "Get the names of all buffers for which vterm is a major mode."
     (mapcar
      #'buffer-name
@@ -168,15 +172,6 @@
 
 ;; writable grep for modifying the results of grep search
 (use-package wgrep)
-
-(use-package magit-ci
-  :straight
-  (magit-ci
-   :type git
-   :host github
-   :repo "Gradecak/magit-ci")
-  :config
-  (magit-ci-mode))
 
 (use-package forge)
 (use-package github-review)

@@ -37,16 +37,3 @@
   :load-path "~/Documents/emacs-pytest/")
 
 (provide 'init)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("1410978f21ad4be59873f27d5020500803a747d2f6ef617608d53c3cf63cc75b" "de43637da82e6127fd76472ae58682927f25693fcccb16161be12f2331bcc7cc" default)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

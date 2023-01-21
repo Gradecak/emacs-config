@@ -3,8 +3,11 @@
 ;;;; Code:
 
 (use-package color-theme-sanityinc-tomorrow
+  :demand t
   :config
-  (color-theme-sanityinc-tomorrow-night))
+  (load-theme 'sanityinc-tomorrow-night))
+
+;; (color-theme-sanityinc-tomorrow-night)
 
 (use-package doom-modeline
   :init
