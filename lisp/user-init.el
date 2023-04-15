@@ -6,6 +6,9 @@
          (prog-mode . subword-mode)
          (text-mode . flymake-mode))
   :init
+  (add-to-list 'display-buffer-alist
+            '("^\\*eldoc" display-buffer-at-bottom
+              (window-height . 12)))
   (setq create-lockfiles nil               ; disable lockfiles
         make-backup-files nil              ; disable backup files
         cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
@@ -43,6 +46,7 @@
   (global-auto-revert-mode 1)              ; auto reload files when changed on disk
   (show-paren-mode t)                      ; highlight parenthesis
   (electric-indent-mode)                   ; indent on RET
+  (electric-pair-mode)                     ; make paren pairs
   (fset 'yes-or-no-p 'y-or-n-p)            ; change yes/no to y/n
   ;; swap around option and command keys when using GUI mac  client
   (when (display-graphic-p)
@@ -91,10 +95,6 @@
   (treemacs-project-follow-mode t)
   (treemacs-follow-mode t)
   (treemacs-git-mode 'deferred))
-
-;; show git file status in treemacs
-;; (use-package treemacs-magit
-;;   :after (treemacs magit))
 
 (use-package magit
   :after consult
@@ -173,25 +173,45 @@
 ;; writable grep for modifying the results of grep search
 (use-package wgrep)
 
-(use-package forge)
+;; (use-package forge)
 (use-package github-review)
-
-(use-package tree-sitter
-  :ensure t
-  :config
-  ;; activate tree-sitter on any buffer containing code for which it has a parser available
-  (global-tree-sitter-mode)
-  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
-  ;; by switching on and off
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-(use-package tree-sitter-langs
-  :ensure t
-  :after tree-sitter)
 
 (use-package project
   :straight (:type built-in)
   :init (setq project-switch-commands 'project-find-file))
 
+(use-package treesit
+  :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
+  :straight (:type built-in)
+  :init
+  (setq treesit-language-source-alist
+   '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
+     (c . ("https://github.com/tree-sitter/tree-sitter-c"))
+     (cpp . ("https://github.com/tree-sitter/tree-sitter-cpp"))
+     (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+     (go . ("https://github.com/tree-sitter/tree-sitter-go"))
+     (html . ("https://github.com/tree-sitter/tree-sitter-html"))
+     (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+     (json . ("https://github.com/tree-sitter/tree-sitter-json"))
+     (lua . ("https://github.com/Azganoth/tree-sitter-lua"))
+     (make . ("https://github.com/alemuller/tree-sitter-make"))
+     (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+     (php . ("https://github.com/tree-sitter/tree-sitter-php"))
+     (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+     (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+     (ruby . ("https://github.com/tree-sitter/tree-sitter-ruby"))
+     (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))
+     (sql . ("https://github.com/m-novikov/tree-sitter-sql"))
+     (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
+     (zig . ("https://github.com/GrayJack/tree-sitter-zig"))))
+  :config
+  (defun nf/treesit-install-all-languages ()
+    "Install all languages specified by `treesit-language-source-alist'."
+    (interactive)
+    (let ((languages (mapcar 'car treesit-language-source-alist)))
+      (dolist (lang languages)
+	      (treesit-install-language-grammar lang)
+	      (message "`%s' parser was installed." lang)
+	      (sit-for 0.75)))))
 
 (provide 'user-init)

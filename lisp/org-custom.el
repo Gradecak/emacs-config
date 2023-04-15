@@ -73,13 +73,13 @@
   :init
   (add-hook 'org-mode-hook #'org-bullets-mode))
 
-(use-package org-roam
-  :after org
-  :bind (("C-c r" . 'org-roam-capture))
-  :config
-  (setq org-roam-directory (expand-file-name "roam" org-home-dir)
-	org-roam-completion-everywhere t)
-  (org-roam-db-autosync-mode))
+;; (use-package org-roam
+;;   :after org
+;;   :bind (("C-c r" . 'org-roam-capture))
+;;   :config
+;;   (setq org-roam-directory (expand-file-name "roam" org-home-dir)
+;; 	org-roam-completion-everywhere t)
+;;   (org-roam-db-autosync-mode))
 
 (use-package ox-rst)
 

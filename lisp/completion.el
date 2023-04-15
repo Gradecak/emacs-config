@@ -128,7 +128,7 @@
 
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key (kbd "C-+"))) ;; (kbd "C-+"))
+  (setq consult-narrow-key "C-+")) ;; (kbd "C-+"))
 
 (use-package company
   :diminish company-mode

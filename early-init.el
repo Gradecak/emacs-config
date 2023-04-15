@@ -1,4 +1,5 @@
 ;; make garbage collector less invasive
+(setq package-enable-at-startup nil)
 (setq gc-cons-threshold  most-positive-fixnum
       gc-cons-percentage 0.6)
 
@@ -10,7 +11,7 @@
 ;;disable shitty UI elements
 (setq default-frame-alist
       '((fullscreen . maximized)
-        (alpha . (90 90))
+        (alpha . (95 95))
 	(font . "Iosevka 13")
         (set-language-environment "UTF-8")
 	(menu-bar-lines . 0)

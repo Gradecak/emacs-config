@@ -1,5 +1,6 @@
 ;; Install straight.el
 
+(setq straight-repository-branch "rr-fix-renamed-variable")
 (setq straight-use-package-by-default t)
 (eval-when-compile
   (defvar bootstrap-version)
@@ -15,8 +16,6 @@
 	(eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 
-  ;; Disable package.el in favor of straight.el
-  (setq package-enable-at-startup nil)
   (straight-use-package 'use-package)
   (straight-use-package 'bind-key)
   (setq straight-check-for-modifications '(check-on-save)))

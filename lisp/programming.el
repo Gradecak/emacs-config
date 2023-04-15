@@ -2,24 +2,19 @@
 
 (defun pylsp-config (server)
   (if (memq 'python-mode (eglot--major-modes (eglot-current-server)))
-    (let* ((project-root (project-root (project-current)))
-	 (pip-dir (expand-file-name ".pip/" project-root))
-	 (lib-dir (car (file-expand-wildcards (expand-file-name "lib/*" pip-dir))))
-	 (jedi-extra-paths []))
-    ;; make sure that when we set the env vars, they are only set for processes
-    ;; spawned from this buffer and _NOT_ globally
-    (make-local-variable 'process-environment)
-    (when lib-dir
-      (setenv "PYTHONPATH" (expand-file-name "site-packages/" lib-dir))
-      (setenv "PATH" (concat (expand-file-name ".pip/bin/" project-root) ":" (getenv "PATH")))
-      (setq jedi-extra-paths (vector (format "%S" (expand-file-name "site-packages/" lib-dir)))))
-    `((pylsp . ((configurationSources . ["flake8"])
-			    (plugins . ((pycodestyle . (enabled :json-false))
-					(pyflakes . (enabled :json-false))
-					(flake8 . (enabled t))
-					(pylsp_mypy . ((enabled . t)
-						       (live-mode . :json-false)))
-					(jedi . (extra_paths ,jedi-extra-paths))))))))
+      (let* ((jedi-extra-paths [".pip/lib/python3.10/site-packages/"
+				".pip/lib/python3.9/site-packages/"
+				"src/"
+				"__pypackages__/3.9/lib/"
+				"__pypackages__/3.10/lib/"]))
+	`((pylsp . ((configurationSources . ["flake8"])
+		    (plugins . ((pycodestyle . (enabled :json-false))
+				(pyflakes . (enabled :json-false))
+				(flake8 . (enabled t))
+				(black . (enabled t))
+				(pylsp_mypy . ((enabled . t)
+					       (live-mode . :json-false)))
+				(jedi . (extra_paths ,jedi-extra-paths))))))))
     `()))
 
 
@@ -32,31 +27,29 @@
   :bind
   (("C-<return> f" . eglot-format-buffer)
    ("C-<return> S" . eglot-shutdown)
-   ("C-<return> r" . eglot-rename))
+   ("C-<return> r" . eglot-rename)
+   ("C-<return> a" . eglot-code-actions))
   :config
   (add-to-list 'eglot-server-programs '(rust-mode . ("rustup" "run" "nightly" "rust-analyzer")))
+  (add-to-list 'eglot-server-programs '(rust-ts-mode . ("rustup" "run" "nightly" "rust-analyzer")))
   (setq eglot-events-buffer-size 0
 	eglot-confirm-server-initiated-edits nil)
   (add-hook 'eglot-managed-mode-hook
-          (lambda ()
-            ;; Show flymake diagnostics first.
-            (setq eldoc-documentation-functions
-                  (cons #'flymake-eldoc-function
-                        (remove #'flymake-eldoc-function eldoc-documentation-functions)))
-            ;; Show all eldoc feedback.
-            (setq eldoc-documentation-strategy #'eldoc-documentation-compose))))
+            (lambda ()
+              ;; Show flymake diagnostics first.
+              (setq eldoc-documentation-functions
+                    (cons #'flymake-eldoc-function
+                          (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+              ;; Show all eldoc feedback.
+              (setq eldoc-documentation-strategy #'eldoc-documentation-compose))))
 
 (use-package rust-mode
   :mode ("\\.rs\\'" . rust-mode)
   :hook (rust-mode . eglot-ensure))
 
-(use-package smartparens
-  :hook (prog-mode . smartparens-mode)
-  :bind (("M-i" . sp-change-enclosing)
-	 ("C-\\" . sp-change-inner)
-	 ("C-S-k" . sp-kill-sexp))
-  :config
-  (require 'smartparens-config))
+(use-package company-box
+  :after company-mode
+  :hook (company-mode . company-box-mode))
 
 (use-package hungry-delete
   :config
@@ -90,11 +83,6 @@
 (use-package haskell-mode
   :hook (go-mode . eglot-ensure))
 
-(use-package js2-mode
-  :straight (:type built-in)
-  :mode (("\\.tsx?\\'" . js2-mode))
-  :hook (js2-mode . eglot-ensure))
-
 (use-package css-mode
   :config
   (setq css-indent-offset 2))
@@ -106,13 +94,14 @@
 
 (use-package typescript-mode
   :after tree-sitter
-  :mode (("\\.tsx?\\'" . typescriptreact-mode))
-  :hook (typescript-mode . eglot-ensure)
+  :mode (("\\.tsx?\\'" . tsx-ts-mode))
+  :hook
+  (typescript-mode . eglot-ensure)
+  (tsx-ts-mode . eglot-ensure)
   :config
-  (setq typescript-indent-level 2)
-  (define-derived-mode typescriptreact-mode typescript-mode
-    "TypeScript TSX")
-  (add-to-list 'tree-sitter-major-mode-language-alist '(typescriptreact-mode . tsx)))
+  (setq-default typescript-indent-level 2)
+  (define-derived-mode typescriptreact-mode typescript-ts-mode
+    "TypeScript TSX"))
 
 (use-package php-mode
   :mode ("\\.php\\'" . php-mode))
@@ -124,7 +113,12 @@
   (setq python-indent-guess-indent-offset-verbose nil)
   :hook
   (python-mode . eglot-ensure)
+  (python-ts-mode . eglot-ensure)
+  :mode ("\\.py\\'". python-ts-mode)
   :bind (:map python-mode-map
+	      ("C-c C-p" . 'python-better-shell)
+	      ("C-c t" . 'pytest-runner)
+	      :map python-ts-mode-map
 	      ("C-c C-p" . 'python-better-shell)
 	      ("C-c t" . 'pytest-runner)))
 
