@@ -10,6 +10,9 @@
   (vertico-mode)
   (setq enable-recursive-minibuffers t
 	vertico-count 20)
+  (setq vertico-multiform-categories
+        '((symbol (vertico-sort-function . vertico-sort-alpha))
+          (file (vertico-sort-function . sort-directories-first))))
   (defun zap-to-slash ()
     "Replicate the Helm-like behaviour of moving back a directory"
     (interactive)
@@ -25,6 +28,9 @@
          ("M-A" . marginalia-cycle))
   :init
   (marginalia-mode))
+
+(use-package flymake-aspell
+  :hook (text-mode-hook . flymake-aspell-setup))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.

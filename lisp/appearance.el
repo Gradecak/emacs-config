@@ -5,7 +5,7 @@
 (use-package color-theme-sanityinc-tomorrow
   :demand t
   :config
-  (load-theme 'sanityinc-tomorrow-night))
+  (load-theme 'sanityinc-tomorrow-bright))
 
 ;; (color-theme-sanityinc-tomorrow-night)
 

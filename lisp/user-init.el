@@ -39,6 +39,7 @@
   (global-hl-line-mode)                    ; highlight current line
   (blink-cursor-mode -1)                   ; disable cursor blinking
   (load custom-file 'noerror 'nomessage)
+  (setq-default indent-tabs-mode nil)
   (setq-default truncate-lines t)
   (setq-default cursor-type 'box)
   (setq-default eldoc-echo-area-use-multiline-p nil)

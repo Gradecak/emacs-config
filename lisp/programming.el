@@ -2,7 +2,8 @@
 
 (defun pylsp-config (server)
   (if (memq 'python-mode (eglot--major-modes (eglot-current-server)))
-      (let* ((jedi-extra-paths [".pip/lib/python3.10/site-packages/"
+      (let* ((jedi-extra-paths [".pip/lib/python3.11/site-packages/"
+                                ".pip/lib/python3.10/site-packages/"
 				".pip/lib/python3.9/site-packages/"
 				"src/"
 				"__pypackages__/3.9/lib/"
@@ -14,6 +15,7 @@
 				(black . (enabled t))
 				(pylsp_mypy . ((enabled . t)
 					       (live-mode . :json-false)))
+                                (jedi_signature_help . (enabled :json-false))
 				(jedi . (extra_paths ,jedi-extra-paths))))))))
     `()))
 
@@ -93,15 +95,12 @@
 	      web-mode-code-indent-offset 2))
 
 (use-package typescript-mode
-  :after tree-sitter
-  :mode (("\\.tsx?\\'" . tsx-ts-mode))
+  :straight (:type built-in)
+  :mode (("\\.tsx\\?\\'" . tsx-ts-mode))
   :hook
-  (typescript-mode . eglot-ensure)
   (tsx-ts-mode . eglot-ensure)
   :config
-  (setq-default typescript-indent-level 2)
-  (define-derived-mode typescriptreact-mode typescript-ts-mode
-    "TypeScript TSX"))
+  (setq-default typescript-indent-level 2))
 
 (use-package php-mode
   :mode ("\\.php\\'" . php-mode))
@@ -128,5 +127,9 @@
 
 (use-package docker
   :bind ("C-c d" . docker))
+
+(use-package clojure-mode)
+(use-package cider)
+
 
 (provide 'programming)

@@ -43,17 +43,17 @@ kills the shell window once the process ends with a 0 status code"
   (interactive)
   (python-shell t (buffer-file-name)))
 
-(defun python-better-shell-send-region ()
-  (interactive)
-  (let ((proc (get-buffer-process python-better-shell-buffer))
-	min max command)
-    (unless proc
-      (error "No active shell process"))
-    (if (use-region-p)
-	(setq min (region-beginning)
-	      max (region-end)))
-    (setq command (concat (buffer-substring min max) "\n"))
-    (term-simple-send proc command)))
+;; (defun python-better-shell-send-region ()
+;;   (interactive)
+;;   (let ((proc (get-buffer-process python-better-shell-buffer))
+;; 	min max command)
+;;     (unless proc
+;;       (error "No active shell process"))
+;;     (if (use-region-p)
+;; 	(setq min (region-beginning)
+;; 	      max (region-end)))
+;;     (setq command (concat (buffer-substring-no-properties min max) "\n"))
+;;     (term-simple-send proc command)))
 
 
 (provide 'python-better-shell)

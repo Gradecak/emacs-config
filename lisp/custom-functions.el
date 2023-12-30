@@ -42,4 +42,22 @@ affects the sort order.  See `sort-regexp-fields'."
   (interactive)
   (load-file user-init-file))
 
+(defun pin-buffer ()
+  "Pin buffer to current window."
+  (interactive)
+  (message
+   (if (let (window (get-buffer-window (current-buffer)))
+         (set-window-dedicated-p window (not (window-dedicated-p window))))
+       "pinned buffer" "un-pinned buffer")
+   ))
+
+(defun toggle-maximize-buffer ()
+  "Maximize buffer"
+  (interactive)
+  (if (= 1 (length (window-list)))
+      (jump-to-register '_)
+    (progn
+      (window-configuration-to-register '_)
+      (delete-other-windows))))
+
 (provide 'custom-functions)

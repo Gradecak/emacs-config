@@ -34,7 +34,8 @@
   :hook ((org-babel-after-execute . org-redisplay-inline-images)
 	 (org-mode . org-indent-mode))
   :config
-  (setq org-agenda-files (file-expand-wildcards (org-file "*.org"))
+  (setq org-blank-before-new-entry '((heading . nil) (plain-list-item . nil))
+        org-agenda-files (file-expand-wildcards (org-file "*.org"))
 	org-capture-templates `(("t" "Todo" entry
 				 (file+headline ,(org-file "inbox.org") "Tasks")
 				 "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n"))
@@ -73,13 +74,13 @@
   :init
   (add-hook 'org-mode-hook #'org-bullets-mode))
 
-;; (use-package org-roam
-;;   :after org
-;;   :bind (("C-c r" . 'org-roam-capture))
-;;   :config
-;;   (setq org-roam-directory (expand-file-name "roam" org-home-dir)
-;; 	org-roam-completion-everywhere t)
-;;   (org-roam-db-autosync-mode))
+(use-package org-roam
+  :after org
+  :bind (("C-c r" . 'org-roam-capture))
+  :config
+  (setq org-roam-directory (expand-file-name "roam" org-home-dir)
+	org-roam-completion-eevrywhere t)
+  (org-roam-db-autosync-mode))
 
 (use-package ox-rst)
 
