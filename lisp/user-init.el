@@ -1,5 +1,7 @@
 (require 'use-package)
 
+(add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
+
 (use-package emacs
   :straight (:type built-in)
   :hook ((prog-mode . flymake-mode)
@@ -9,6 +11,8 @@
   (add-to-list 'display-buffer-alist
             '("^\\*eldoc" display-buffer-at-bottom
               (window-height . 12)))
+  (add-to-list 'display-buffer-alist
+               '("*Async Shell Command*" display-buffer-no-window (nil)))
   (setq create-lockfiles nil               ; disable lockfiles
         make-backup-files nil              ; disable backup files
         cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
@@ -120,8 +124,8 @@
 						 (pullreqs . show)
 						 (issues . show))))
 
-(use-package magit-todos
-  :config (magit-todos-mode))
+;; (use-package magit-todos
+;;   :config (magit-todos-mode))
 
 ;; a nice way to select symbols
 (use-package expand-region
@@ -184,7 +188,7 @@
 (use-package treesit
   :commands (treesit-install-language-grammar nf/treesit-install-all-languages)
   :straight (:type built-in)
-  :init
+  :preface
   (setq treesit-language-source-alist
    '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
      (c . ("https://github.com/tree-sitter/tree-sitter-c"))
@@ -205,7 +209,6 @@
      (sql . ("https://github.com/m-novikov/tree-sitter-sql"))
      (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
      (zig . ("https://github.com/GrayJack/tree-sitter-zig"))))
-  :config
   (defun nf/treesit-install-all-languages ()
     "Install all languages specified by `treesit-language-source-alist'."
     (interactive)
@@ -213,6 +216,16 @@
       (dolist (lang languages)
 	      (treesit-install-language-grammar lang)
 	      (message "`%s' parser was installed." lang)
-	      (sit-for 0.75)))))
+	      (sit-for 0.75))))
+  (dolist (mapping
+           '((python-mode . python-ts-mode)
+             (css-mode . css-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js2-mode . js-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (css-mode . css-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping)))
 
 (provide 'user-init)

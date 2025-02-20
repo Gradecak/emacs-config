@@ -12,6 +12,7 @@
 		    (plugins . ((pycodestyle . (enabled :json-false))
 				(pyflakes . (enabled :json-false))
 				(flake8 . (enabled t))
+                                (isort . (enabled t))
 				(black . (enabled t))
 				(pylsp_mypy . ((enabled . t)
 					       (live-mode . :json-false)))
@@ -35,7 +36,10 @@
   (add-to-list 'eglot-server-programs '(rust-mode . ("rustup" "run" "nightly" "rust-analyzer")))
   (add-to-list 'eglot-server-programs '(rust-ts-mode . ("rustup" "run" "nightly" "rust-analyzer")))
   (setq eglot-events-buffer-size 0
-	eglot-confirm-server-initiated-edits nil)
+	eglot-confirm-server-initiated-edits nil
+        eglot-sync-connect 0
+        eglot-autoshutdown t
+        eglot-inlay-hints-mode t)
   (add-hook 'eglot-managed-mode-hook
             (lambda ()
               ;; Show flymake diagnostics first.
@@ -77,7 +81,7 @@
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . markdown-mode)
 	 ("\\.markdown\\'" . markdown-mode))
-  :config (setq markdown-command "multimarkdown"))
+  :config (setq-default markdown-command "multimarkdown"))
 
 (use-package go-mode
   :hook (go-mode . eglot-ensure))
@@ -89,14 +93,24 @@
   :config
   (setq css-indent-offset 2))
 
+(use-package sqlformat
+  :config
+  (setq-default sqlformat-command 'pgformatter))
+
+(use-package sql
+  :after sqlformat
+  :straight (:type built-in)
+  :bind (:map sql-mode-map
+              ("C-<return> f" . sqlformat-buffer)))
+
 (use-package web-mode
-  :init (setq web-mode-markup-indent-offset 2
-	      web-mode-css-indent-offset 2
-	      web-mode-code-indent-offset 2))
+  :init (setq-default web-mode-markup-indent-offset 2
+	              web-mode-css-indent-offset 2
+	              web-mode-code-indent-offset 2))
 
 (use-package typescript-mode
   :straight (:type built-in)
-  :mode (("\\.tsx\\?\\'" . tsx-ts-mode))
+  :mode (("\\.tsx?\\'" . tsx-ts-mode))
   :hook
   (tsx-ts-mode . eglot-ensure)
   :config
@@ -130,6 +144,5 @@
 
 (use-package clojure-mode)
 (use-package cider)
-
 
 (provide 'programming)
