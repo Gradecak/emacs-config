@@ -3,8 +3,6 @@
 ;;; Commentary:
 
 (require  'project)
-(require 'magit)
-(require 'consult)
 (require 'custom-functions)
 
 ;;; Code:

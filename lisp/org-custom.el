@@ -1,8 +1,3 @@
-(require 'org-capture)
-(require 'org-clock)
-(require 'org-agenda)
-(require 'use-package)
-
 
 (defcustom org-home-dir "~/Documents/org/"
   "Home directory for org files"
@@ -68,9 +63,11 @@
   (org-babel-do-load-languages
    'org-babel-load-languages '((shell . t)
 			       (sql . t)
-			       (plantuml . t))))
+			       (plantuml . t)
+                               (python . t))))
 
 (use-package org-bullets
+  :defer t
   :init
   (add-hook 'org-mode-hook #'org-bullets-mode))
 
@@ -82,6 +79,7 @@
 	org-roam-completion-eevrywhere t)
   (org-roam-db-autosync-mode))
 
-(use-package ox-rst)
+(use-package ox-rst
+  :defer t)
 
 (provide 'org-custom)
