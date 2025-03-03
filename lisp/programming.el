@@ -143,6 +143,12 @@
   :bind ("C-c d" . docker))
 
 (use-package clojure-mode)
-(use-package cider)
+  :defer t
+
+(use-package cider
+  :defer t)
+
+(use-package elixir-ts-mode
+  :ensure t)
 
 (provide 'programming)

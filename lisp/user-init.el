@@ -1,5 +1,3 @@
-(require 'use-package)
-
 (add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
 
 (use-package emacs
@@ -178,9 +176,6 @@
 ;; writable grep for modifying the results of grep search
 (use-package wgrep)
 
-;; (use-package forge)
-(use-package github-review)
-
 (use-package project
   :straight (:type built-in)
   :init (setq project-switch-commands 'project-find-file))
@@ -208,7 +203,9 @@
      (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))
      (sql . ("https://github.com/m-novikov/tree-sitter-sql"))
      (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-     (zig . ("https://github.com/GrayJack/tree-sitter-zig"))))
+     (zig . ("https://github.com/GrayJack/tree-sitter-zig"))
+     (heex . ("https://github.com/phoenixframework/tree-sitter-heex"))
+     (elixir . ("https://github.com/elixir-lang/tree-sitter-elixir"))))
   (defun nf/treesit-install-all-languages ()
     "Install all languages specified by `treesit-language-source-alist'."
     (interactive)
