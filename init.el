@@ -1,4 +1,4 @@
-;; Install straight.el
+;; Install straight.el  -*- lexical-binding: t; -*-
 
 (setq straight-use-package-by-default t)
 (eval-when-compile
@@ -33,10 +33,8 @@
                   navigation
 		  bloomon
                   keybindings
+                  risk
+                  grpc
                   ))
-
-(use-package pytest
-  :straight nil
-  :load-path "~/Documents/emacs-pytest/")
 
 (provide 'init)

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
 
 (use-package emacs
@@ -26,11 +27,8 @@
 	next-line-add-newlines t
         shell-command-switch "-ic"
 	native-comp-async-report-warnings-errors nil ;; disable annoying native compilation warning
-        auto-revert-use-notify nil)
-
-  ;; disable macos native fullscreen
-  (if (eq system-type 'darwin)
-      (setq ns-use-native-fullscreen nil))
+        auto-revert-use-notify nil
+        ring-bell-function 'ignore) ;; disable annoying-ass bell
 
   (add-hook 'prog-mode #'(lambda () (setq indent-tabs-mode nil)))
 
@@ -45,6 +43,7 @@
   (setq-default truncate-lines t)
   (setq-default cursor-type 'box)
   (setq-default eldoc-echo-area-use-multiline-p nil)
+  (setq-default doc-view-resolution 400)   ; make pdf renders less blurry on high res
   (recentf-mode)                           ; enable recent files
   (global-auto-revert-mode 1)              ; auto reload files when changed on disk
   (show-paren-mode t)                      ; highlight parenthesis
@@ -52,11 +51,11 @@
   (electric-pair-mode)                     ; make paren pairs
   (fset 'yes-or-no-p 'y-or-n-p)            ; change yes/no to y/n
   ;; swap around option and command keys when using GUI mac  client
-  (when (display-graphic-p)
-    (setq mac-option-key-is-meta nil
-	  mac-command-key-is-meta t
-	  mac-command-modifier 'meta
-	  mac-option-modifier 'none))
+  ;;(when (display-graphic-p)
+  ;; (setq mac-option-key-is-meta nil
+  ;;         mac-command-key-is-meta t
+  ;;         mac-command-modifier 'meta
+  ;;         mac-option-modifier 'none))
   ;; run garbage collection when focus changes
   (add-function :after after-focus-change-function
 		(defun me/garbage-collect-maybe ()
@@ -65,8 +64,11 @@
   ;; set the default directory for the auto-generated backup files
   (setq backup-directory-alist
 	`(("." . ,(concat user-emacs-directory "backups"))))
-  (setq auto-save-file-name-transforms
-	`((".*" "~/.emacs-saves/" t)))
+  (let ((auto-save-dir "~/.emacs-saves/"))
+    (unless (file-exists-p auto-save-dir)
+      (make-directory auto-save-dir)
+      (setq auto-save-file-name-transforms
+	`((".*" "~/.emacs-saves/" t)))))
   ;; enable line numbers
   (add-hook 'conf-mode-hook #'display-line-numbers-mode)
   (add-hook 'prog-mode-hook #'display-line-numbers-mode)
@@ -131,12 +133,6 @@
   (global-set-key (kbd "C-=") 'er/expand-region)
   (global-set-key (kbd "C--") 'er/contract-region))
 
-;; move lines up/down
-(use-package drag-stuff
-  :config
-  (global-set-key (kbd "C-s-p") #'drag-stuff-up)
-  (global-set-key (kbd "C-s-n") #'drag-stuff-down))
-
 (use-package tramp
   :straight (:type built-in)
   :config
@@ -165,6 +161,8 @@
   (add-to-list 'consult-buffer-sources 'consult--source-terminal 'append)
   :bind (("C-c m" . vterm))
   :config
+  (push (list "find-file-other-window" #'find-file-other-window) vterm-eval-cmds)
+  (push (list "maybe-refresh-keycloak-token" #'risk/set-token-env-var) vterm-eval-cmds)
   (setq vterm-max-scrollback 10000
 	vterm-timer-delay 0
         vterm-buffer-name-string "%s"
@@ -204,6 +202,7 @@
      (sql . ("https://github.com/m-novikov/tree-sitter-sql"))
      (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
      (zig . ("https://github.com/GrayJack/tree-sitter-zig"))
+     (proto . ("https://github.com/mitchellh/tree-sitter-proto"))
      (heex . ("https://github.com/phoenixframework/tree-sitter-heex"))
      (elixir . ("https://github.com/elixir-lang/tree-sitter-elixir"))))
   (defun nf/treesit-install-all-languages ()

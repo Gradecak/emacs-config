@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (require 'use-package)
 
 (use-package orderless
@@ -33,6 +35,7 @@
   :hook (text-mode-hook . flymake-aspell-setup))
 
 (use-package consult
+  :demand t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)

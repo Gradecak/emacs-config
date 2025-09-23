@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (require 'project)
 
 (defun delete-file-and-buffer ()
@@ -72,5 +74,16 @@ affects the sort order.  See `sort-regexp-fields'."
 
 ;; Handy key definition
 (define-key global-map "\M-Q" 'unfill-paragraph)
+
+
+;;
+(defun mg-toggle-macos-laptop-config ()
+  (interactive)
+  (if (eq mac-command-modifier 'super)
+      (setq mac-command-modifier 'meta
+            mac-option-modifier 'none)
+    (setq mac-command-modifier 'super
+          mac-option-modifier 'meta)))
+
 
 (provide 'custom-functions)

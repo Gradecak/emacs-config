@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; bloomon --- stuff
 
 ;;; Commentary:

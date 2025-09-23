@@ -1,11 +1,18 @@
+;; -*- lexical-binding: t; -*-
+
 (require 'use-package)
 
 ;;;; Code:
 
-(use-package color-theme-sanityinc-tomorrow
-  :demand t
+;; (use-package color-theme-sanityinc-tomorrow
+;;   :demand t
+;;   :config
+;;   (load-theme 'sanityinc-tomorrow-bright))
+
+(use-package kaolin-themes
   :config
-  (load-theme 'sanityinc-tomorrow-bright))
+  (load-theme 'kaolin-valley-dark t)
+  (kaolin-treemacs-theme))
 
 ;; (color-theme-sanityinc-tomorrow-night)
 
@@ -13,6 +20,7 @@
   :init
   ;; show doom-modeline at the same time with dashboard
   (add-hook 'emacs-startup-hook 'doom-modeline-mode -100)
+  (setq-default doom-modeline-buffer-file-name-style 'relative-from-project)
   :custom (doom-modeline-buffer-encoding nil)
   (doom-modeline-vcs-max-length 40)
   (doom-modeline-bar-width 1)
@@ -35,12 +43,8 @@
   :config (global-diff-hl-mode))
 
 ;; enable fill column line
-(setq-default fill-column 88)
+(setq-default fill-column 100)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
-
-;; disable macos native fullscreen
-(if (eq system-type 'darwin)
-    (setq ns-use-native-fullscreen nil))
 
 ;; nice dashboard on startup
 (use-package dashboard

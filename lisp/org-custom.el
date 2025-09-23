@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 (defcustom org-home-dir "~/Documents/org/"
   "Home directory for org files"

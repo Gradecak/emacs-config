@@ -1,32 +1,45 @@
+;; -*- lexical-binding: t; -*-
+
 (require 'use-package)
 
-(defun pylsp-config (server)
-  (if (memq 'python-mode (eglot--major-modes (eglot-current-server)))
-      (let* ((jedi-extra-paths [".pip/lib/python3.11/site-packages/"
-                                ".pip/lib/python3.10/site-packages/"
-				".pip/lib/python3.9/site-packages/"
-				"src/"
-				"__pypackages__/3.9/lib/"
-				"__pypackages__/3.10/lib/"]))
+(defun pylsp-config ()
+  (let* ((jedi-extra-paths ["src/"
+                            ".site-packages"
+                            ".dockerdev/site-packages"
+                            ".dockerenv/site-packages"
+			    "__pypackages__/3.9/lib/"
+			    "__pypackages__/3.10/lib/"]))
 	`((pylsp . ((configurationSources . ["flake8"])
 		    (plugins . ((pycodestyle . (enabled :json-false))
 				(pyflakes . (enabled :json-false))
-				(flake8 . (enabled t))
+                                (ruff . (enabled t
+                                         formatEnabled t))
+				;; (flake8 . (enabled t))
                                 (isort . (enabled t))
-				(black . (enabled t))
+				;; (black . (enabled t))
+                                (rope . (ropeFolder nil))
+                                (rope_autoimport . (completions (enabled :json-false)
+                                                    code_actions (enabled :json-false)))
 				(pylsp_mypy . ((enabled . t)
 					       (live-mode . :json-false)))
                                 (jedi_signature_help . (enabled :json-false))
-				(jedi . (extra_paths ,jedi-extra-paths))))))))
-    `()))
+				(jedi . (extra_paths ,jedi-extra-paths)))))))))
 
+(defun elixir-ls-config ()
+  `((:elixirLS . ((:suggestSpecs . t)
+                  (:dialyzerEnabled . t)))))
 
-
+(defun eglot-server-config (server)
+  (let ((major-modes (eglot--major-modes (eglot-current-server))))
+    (cond
+     ((memq 'python-ts-mode major-modes) (pylsp-config))
+     ((memq 'elixir-ts-mode major-modes) (elixir-ls-config))
+     )))
 
 (use-package eglot
   :straight (:type built-in)
   :init
-  (setq eglot-workspace-configuration #'pylsp-config)
+  (setq eglot-workspace-configuration #'eglot-server-config)
   :bind
   (("C-<return> f" . eglot-format-buffer)
    ("C-<return> S" . eglot-shutdown)
@@ -35,6 +48,7 @@
   :config
   (add-to-list 'eglot-server-programs '(rust-mode . ("rustup" "run" "nightly" "rust-analyzer")))
   (add-to-list 'eglot-server-programs '(rust-ts-mode . ("rustup" "run" "nightly" "rust-analyzer")))
+  (add-to-list 'eglot-server-programs '(elixir-ts-mode . ("~/Downloads/elixir-ls/language_server.sh")))
   (setq eglot-events-buffer-size 0
 	eglot-confirm-server-initiated-edits nil
         eglot-sync-connect 0
@@ -125,7 +139,6 @@
   (setq-default python-indent-offset 4)
   (setq python-indent-guess-indent-offset-verbose nil)
   :hook
-  (python-mode . eglot-ensure)
   (python-ts-mode . eglot-ensure)
   :mode ("\\.py\\'". python-ts-mode)
   :bind (:map python-mode-map
@@ -134,6 +147,9 @@
 	      :map python-ts-mode-map
 	      ("C-c C-p" . 'python-better-shell)
 	      ("C-c t" . 'pytest-runner)))
+
+(use-package protobuf-ts-mode
+  :defer t)
 
 (use-package python-better-shell
   :straight nil
@@ -149,6 +165,17 @@
   :defer t)
 
 (use-package elixir-ts-mode
-  :ensure t)
+  :straight (:type built-in)
+  :ensure t
+  :mode ("\\.exs?\\'" . elixir-ts-mode)
+  :hook
+  (elixir-ts-mode-hook . eglot-ensure))
+
+(use-package jsonnet-mode
+  :straight (jsonnet-mode
+             :type git
+             :host github
+             :repo "tminor/jsonnet-mode")
+  :mode ("\\.(j|lib)sonnet\\'"))
 
 (provide 'programming)
