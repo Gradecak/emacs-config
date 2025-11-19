@@ -2,6 +2,14 @@
 
 (require 'use-package)
 
+(defun typescript-ls-config ()
+  `((:typescript . ((format . ((baseIndentSize . 0)
+                               (indentSize . 2)
+                               (indentStyle . "smart")))))))
+
+
+
+
 (defun pylsp-config ()
   (let* ((jedi-extra-paths ["src/"
                             ".site-packages"
@@ -34,6 +42,7 @@
     (cond
      ((memq 'python-ts-mode major-modes) (pylsp-config))
      ((memq 'elixir-ts-mode major-modes) (elixir-ls-config))
+     ((memq 'tsx-ts-mode major-modes) (typescript-ls-config))
      )))
 
 (use-package eglot
@@ -49,11 +58,13 @@
   (add-to-list 'eglot-server-programs '(rust-mode . ("rustup" "run" "nightly" "rust-analyzer")))
   (add-to-list 'eglot-server-programs '(rust-ts-mode . ("rustup" "run" "nightly" "rust-analyzer")))
   (add-to-list 'eglot-server-programs '(elixir-ts-mode . ("~/Downloads/elixir-ls/language_server.sh")))
-  (setq eglot-events-buffer-size 0
+  (setq eglot-events-buffer-config '(:size 0 :format full)
+        eglot-events-buffer-size 0
 	eglot-confirm-server-initiated-edits nil
         eglot-sync-connect 0
         eglot-autoshutdown t
-        eglot-inlay-hints-mode t)
+        eglot-inlay-hints-mode t
+        eglot-code-action-indicator "*")
   (add-hook 'eglot-managed-mode-hook
             (lambda ()
               ;; Show flymake diagnostics first.
@@ -149,7 +160,8 @@
 	      ("C-c t" . 'pytest-runner)))
 
 (use-package protobuf-ts-mode
-  :defer t)
+  :defer t
+  :mode ("\\.proto\\'"))
 
 (use-package python-better-shell
   :straight nil
@@ -177,5 +189,10 @@
              :host github
              :repo "tminor/jsonnet-mode")
   :mode ("\\.(j|lib)sonnet\\'"))
+
+(use-package terraform-mode
+  :mode ("\\.tf\\'"))
+
+
 
 (provide 'programming)

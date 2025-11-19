@@ -23,8 +23,7 @@
   (setq straight-check-for-modifications '(check-on-save)))
 
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/"))
-(mapc #'require '(
-                  user-init
+(mapc #'require '(user-init
                   custom-functions
                   appearance
                   programming
@@ -35,6 +34,6 @@
                   keybindings
                   risk
                   grpc
-                  ))
+                  ai))
 
 (provide 'init)

@@ -1,5 +1,9 @@
 ;; -*- lexical-binding: t; -*-
-(add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
+
+(use-package exec-path-from-shell
+  :demand t
+  :init
+  (exec-path-from-shell-initialize))
 
 (use-package emacs
   :straight (:type built-in)
@@ -8,8 +12,8 @@
          (text-mode . flymake-mode))
   :init
   (add-to-list 'display-buffer-alist
-            '("^\\*eldoc" display-buffer-at-bottom
-              (window-height . 12)))
+               '("^\\*eldoc" display-buffer-at-bottom
+                 (window-height . 12)))
   (add-to-list 'display-buffer-alist
                '("*Async Shell Command*" display-buffer-no-window (nil)))
   (setq create-lockfiles nil               ; disable lockfiles
@@ -68,7 +72,7 @@
     (unless (file-exists-p auto-save-dir)
       (make-directory auto-save-dir)
       (setq auto-save-file-name-transforms
-	`((".*" "~/.emacs-saves/" t)))))
+	    `((".*" "~/.emacs-saves/" t)))))
   ;; enable line numbers
   (add-hook 'conf-mode-hook #'display-line-numbers-mode)
   (add-hook 'prog-mode-hook #'display-line-numbers-mode)
@@ -78,11 +82,6 @@
 		display-line-numbers-type 'relative)
   ;; delete trailing whitespaces on save
   (add-hook 'before-save-hook (lambda () (delete-trailing-whitespace))))
-
-;; load $PATH from the shell environment
-(use-package exec-path-from-shell
-  :init
-  (add-hook 'after-init-hook 'exec-path-from-shell-initialize))
 
 (use-package undo-tree
   :config
@@ -140,7 +139,7 @@
 	tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
 
 (use-package vterm
-  :after consult
+  :after consult exec-path-from-shell
   :init
   (defun vterm-buffers ()
     "Get the names of all buffers for which vterm is a major mode."

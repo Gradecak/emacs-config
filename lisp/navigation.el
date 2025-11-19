@@ -3,8 +3,10 @@
 (require 'use-package)
 
 (use-package ace-window
+  :demand t
   :bind (("M-o" . ace-window))
   :config
+  (setq aw-ignore-on t)
   (defun aw-kill-buffer (window)
     (interactive)
     (kill-buffer (window-buffer window)))

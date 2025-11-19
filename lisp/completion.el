@@ -34,7 +34,10 @@
 (use-package flymake-aspell
   :hook (text-mode-hook . flymake-aspell-setup))
 
+(use-package cond-let)
+
 (use-package consult
+  :after cond-let
   :demand t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)

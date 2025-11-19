@@ -63,3 +63,8 @@ templates/
 elpy/
 straight/
 snippets/
+eln-cache/
+org-persist/
+org-roam.*
+tree-sitter/
+projects
