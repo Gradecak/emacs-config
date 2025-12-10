@@ -118,7 +118,8 @@
     "github candicates for `consult-buffer'.")
   (add-to-list 'consult-buffer-sources 'consult--source-magit 'append)
   :config
-  (setq magit-section-initial-visibility-alist '((stashes . show)
+  (setq  magit-define-global-key-bindings 'default
+         magit-section-initial-visibility-alist '((stashes . show)
 						 (unpushed . show)
 						 (pullreqs . show)
 						 (issues . show))))
