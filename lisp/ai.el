@@ -13,7 +13,7 @@
   :demand t
   :after (acp shell-maker ace-window)
   :straight (agent-shell :type git :host github :repo "xenodium/agent-shell")
-  :bind (("C-c g" . agent-shell)
+  :bind (("C-c g" . agent-shell-toggle)
          :map agent-shell-mode-map
          ("C-q" . bury-buffer))
   :hook (agent-shell-mode . (lambda ()
@@ -32,8 +32,9 @@
                                        (no-delete-other-windows . t)
                                        (window-size-fixed . width)))))
   (setq
-   agent-shell-cursor-command `("cursor-agent-acp" "--config" ,(expand-file-name "~/.config/cursor/acp-config.json"))
-   agent-shell-preferred-agent-config (agent-shell-goose-make-agent-config)
+   agent-shell-prefer-viewport-interaction t
+   ;; agent-shell-preferred-agent-config (agent-shell-goose-make-agent-config)
+   agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config)
    agent-shell-goose-authentication
         ;; the key is ignored and the config file for goose is used
         (agent-shell-make-goose-authentication :openai-api-key "FAKE KEY")))

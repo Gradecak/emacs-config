@@ -65,6 +65,7 @@
   :hook '((embark-collect-mode . consult-preview-at-point-mode)))
 
 (use-package avy
+  :after (org-mode)
   :config
   (setq avy-background t)
   (defun avy-action-copy-whole-line (pt)

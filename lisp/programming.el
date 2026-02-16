@@ -15,6 +15,7 @@
                             ".site-packages"
                             ".dockerdev/site-packages"
                             ".dockerenv/site-packages"
+                            ".venv/lib/python3.12/site-packages"
 			    "__pypackages__/3.9/lib/"
 			    "__pypackages__/3.10/lib/"]))
 	`((pylsp . ((configurationSources . ["flake8"])
