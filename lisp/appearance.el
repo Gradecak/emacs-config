@@ -9,12 +9,52 @@
 ;;   :config
 ;;   (load-theme 'sanityinc-tomorrow-bright))
 
-(use-package kaolin-themes
+;; (use-package kaolin-themes
+;;   :config
+;;   (load-theme 'kaolin-valley-dark t)
+;;   (kaolin-treemacs-theme))
+
+(use-package doom-themes
+  :ensure t
+  :custom
+  ;; Global settings (defaults)
+  (doom-themes-enable-bold nil)   ; if nil, bold is universally disabled
+  (doom-themes-enable-italic nil) ; if nil, italics is universally disabled
+  ;; for treemacs users
+  (doom-themes-treemacs-theme "doom-bluloco-dark") ; use "doom-colors" for less minimal icon theme
   :config
-  (load-theme 'kaolin-valley-dark t)
-  (kaolin-treemacs-theme))
+  (load-theme 'doom-bluloco-dark t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 ;; (color-theme-sanityinc-tomorrow-night)
+
+(use-package solaire-mode :config (solaire-global-mode +1))
+
+(use-package emacs
+  :straight (:type built-in)
+  :config
+  (setq window-divider-default-places t
+        window-divider-default-right-width 4
+        window-divider-default-bottom-width 4)
+  (window-divider-mode 1)
+  (custom-set-faces
+   '(window-divider             ((t (:foreground "#7a8294"))))
+   '(window-divider-first-pixel ((t (:foreground "#3a3f8c"))))
+   '(window-divider-last-pixel  ((t (:foreground "#3a3f4c"))))))
+
+(use-package auto-dim-other-buffers
+  :ensure t
+  :config
+  (auto-dim-other-buffers-mode t))
+
 
 (use-package doom-modeline
   :init

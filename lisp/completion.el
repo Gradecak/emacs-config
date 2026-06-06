@@ -36,6 +36,21 @@
 
 (use-package cond-let)
 
+(defun mg-persp-filter-source (source)
+  "Add perspective filtering to a consult buffer SOURCE.
+Wraps the source's :items function so results are filtered to the
+current perspective.  If perspective is not loaded, items are
+returned unfiltered."
+  (let ((orig-items (plist-get (symbol-value source) :items)))
+    (set source
+         (plist-put (copy-sequence (symbol-value source))
+                    :items
+                    (lambda ()
+                      (let ((items (funcall orig-items)))
+                        (if (fboundp 'persp-buffer-list-filter)
+                            (persp-buffer-list-filter items t)
+                          items)))))))
+
 (use-package consult
   :after cond-let
   :demand t
@@ -123,6 +138,7 @@
   ;; after lazily loading the package.
   :config
   (add-to-list 'consult-buffer-sources 'consult--source-unsaved-buffers 'append)
+  (mg-persp-filter-source 'consult--source-unsaved-buffers)
   ;; Optionally configure preview. The default value
   ;; is 'any, such that any key triggers the preview.
   ;; (setq consult-preview-key 'any)

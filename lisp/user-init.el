@@ -5,6 +5,18 @@
   :init
   (exec-path-from-shell-initialize))
 
+(use-package perspective
+  :after consult
+  ;; :bind
+  ;; ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  :custom
+  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+  :init
+  (persp-mode)
+  :config
+  (consult-customize consult-source-buffer :hidden t :default nil)
+  (add-to-list 'consult-buffer-sources persp-consult-source))
+
 (use-package emacs
   :straight (:type built-in)
   :hook ((prog-mode . flymake-mode)
@@ -16,6 +28,13 @@
                  (window-height . 12)))
   (add-to-list 'display-buffer-alist
                '("*Async Shell Command*" display-buffer-no-window (nil)))
+  (add-to-list 'display-buffer-alist
+               '("*Completions*" display-buffer-no-window (nil)))
+  ;; prefer window re-use rather than messing up windows layout
+  (customize-set-variable 'display-buffer-base-action
+  '((display-buffer-reuse-window display-buffer-same-window)
+    (reusable-frames . t)))
+  (customize-set-variable 'even-window-sizes nil)     ; avoid resizing
   (setq create-lockfiles nil               ; disable lockfiles
         make-backup-files nil              ; disable backup files
         cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
@@ -117,6 +136,7 @@
 	    :items ,#'magit-buffers)
     "github candicates for `consult-buffer'.")
   (add-to-list 'consult-buffer-sources 'consult--source-magit 'append)
+  (mg-persp-filter-source 'consult--source-magit)
   :config
   (setq  magit-define-global-key-bindings 'default
          magit-section-initial-visibility-alist '((stashes . show)
@@ -139,34 +159,64 @@
   (setq tramp-verbose 3
 	tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
 
-(use-package vterm
+;; (use-package vterm
+;;   :after consult exec-path-from-shell
+;;   :init
+;;   (defun vterm-buffers ()
+;;     "Get the names of all buffers for which vterm is a major mode."
+;;     (mapcar
+;;      #'buffer-name
+;;      (-filter
+;;       (lambda (buffer) (with-current-buffer buffer (eq major-mode 'vterm-mode)))
+;;       (buffer-list))))
+;;   (defvar consult--source-terminal
+;;     `(:name "Terminal"
+;; 	    :narrow (?t . "Terminal")
+;; 	    :enabled (lambda () (not (eq (vterm-buffers) nil)))
+;; 	    :category buffer
+;; 	    :state ,#'consult--buffer-preview
+;; 	    :action  ,#'consult--buffer-action
+;; 	    :items ,#'vterm-buffers)
+;;     "Terminal candidate for `consult-buffer'.")
+;;   (add-to-list 'consult-buffer-sources 'consult--source-terminal 'append)
+;;   (mg-persp-filter-source 'consult--source-terminal)
+;;   :bind (("C-c m" . vterm))
+;;   :config
+;;   (push (list "find-file-other-window" #'find-file-other-window) vterm-eval-cmds)
+;;   (push (list "maybe-refresh-keycloak-token" #'risk/set-token-env-var) vterm-eval-cmds)
+;;   (setq vterm-max-scrollback 10000
+;; 	vterm-timer-delay 0
+;;         vterm-buffer-name-string "%s"
+;; 	vterm-kill-buffer-on-exit t))
+
+
+(use-package ghostel
   :after consult exec-path-from-shell
-  :init
-  (defun vterm-buffers ()
-    "Get the names of all buffers for which vterm is a major mode."
+  :ensure t
+  :preface
+  (defun ghostel-buffers ()
+    "Get the names of all buffers for which ghostel is a major mode."
     (mapcar
      #'buffer-name
      (-filter
-      (lambda (buffer) (with-current-buffer buffer (eq major-mode 'vterm-mode)))
+      (lambda (buffer) (with-current-buffer buffer (eq major-mode 'ghostel-mode)))
       (buffer-list))))
-  (defvar consult--source-terminal
-    `(:name "Terminal"
+  (defun ghostel-new-shell ()
+    (interactive)
+    (ghostel t))
+  :init
+  (defvar consult--source-ghostel
+    `(:name "Ghostel"
 	    :narrow (?t . "Terminal")
-	    :enabled (lambda () (not (eq (vterm-buffers) nil)))
+	    :enabled (lambda () (not (eq (ghostel-buffers) nil)))
 	    :category buffer
 	    :state ,#'consult--buffer-preview
 	    :action  ,#'consult--buffer-action
-	    :items ,#'vterm-buffers)
-    "Terminal candidate for `consult-buffer'.")
-  (add-to-list 'consult-buffer-sources 'consult--source-terminal 'append)
-  :bind (("C-c m" . vterm))
-  :config
-  (push (list "find-file-other-window" #'find-file-other-window) vterm-eval-cmds)
-  (push (list "maybe-refresh-keycloak-token" #'risk/set-token-env-var) vterm-eval-cmds)
-  (setq vterm-max-scrollback 10000
-	vterm-timer-delay 0
-        vterm-buffer-name-string "%s"
-	vterm-kill-buffer-on-exit t))
+	    :items ,#'ghostel-buffers)
+    "Ghostel candidate for `consult-buffer'.")
+  (add-to-list 'consult-buffer-sources 'consult--source-ghostel 'append)
+  (mg-persp-filter-source 'consult--source-ghostel)
+  :bind (("C-c m" . ghostel-new-shell)))
 
 ;; emacs startup profiler
 (use-package esup)

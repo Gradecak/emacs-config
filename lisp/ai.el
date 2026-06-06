@@ -61,7 +61,8 @@ With \\[universal-argument] \\[universal-argument], prompt for project and creat
   :straight (agent-shell :type git :host github :repo "xenodium/agent-shell")
   :bind (("C-c g" . mg-agent-shell)
          :map agent-shell-mode-map
-         ("C-q" . bury-buffer))
+         ("C-q" . bury-buffer)
+         ("C-c b" . agent-shell-queue-peek-back))
   ;; :hook (agent-shell-mode . (lambda ()
   ;;                             (setq-local mode-line-format nil
   ;;                                         header-line-format nil)))
@@ -78,9 +79,19 @@ With \\[universal-argument] \\[universal-argument], prompt for project and creat
                  (window-width . 0.25)
                  (window-parameters . ((no-other-window . t)
                                        (no-delete-other-windows . t)
-                                       (window-size-fixed . width)))))
+                                       (window-size-fixed . width)
+                                       (agent-shell-mode-dedicated . t)))))
+  (add-to-list 'display-buffer-alist
+               '("\\*Agent Queue\\*"
+                 (display-buffer-reuse-window display-buffer-in-side-window)
+                 (side . right)
+                 (slot . -1)
+                 (preserve-size . (t . nil))
+                 (window-height . 0.3)
+                 (window-width . 0.25)
+                 (window-parameters . ((no-delete-other-windows . t)))))
   (setq
-   agent-shell-anthropic-default-model-id "claude-opus-4-6"
+   agent-shell-anthropic-default-model-id "claude-opus-4-7"
    agent-shell-prefer-viewport-interaction nil
    ;; agent-shell-preferred-agent-config (agent-shell-goose-make-agent-config)
    agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config)
@@ -88,10 +99,11 @@ With \\[universal-argument] \\[universal-argument], prompt for project and creat
         ;; the key is ignored and the config file for goose is used
         (agent-shell-make-goose-authentication :openai-api-key "FAKE KEY")))
 
-(use-package agent-shell-queue
-  :after agent-shell
-  :straight nil
-  :config
-  (agent-shell-queue-mode 1))
+;; (use-package agent-shell-queue
+;;   :after agent-shell
+;;   :straight nil
+;;   :load-path "./lisp/"
+;;   :config
+;;   (agent-shell-queue-mode 1))
 
 (provide 'ai)

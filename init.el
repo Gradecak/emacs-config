@@ -34,6 +34,6 @@
                   keybindings
                   risk
                   grpc
-                  ai))
+                  ))
 
 (provide 'init)
